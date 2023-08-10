@@ -1,15 +1,17 @@
 "use client";
 
-import { Music } from "@/app/page";
 import { createContext, useEffect, useState } from "react";
+import { Music } from "../audio-player/music";
 
 export type OPFSState = {
   rootDir?: FileSystemDirectoryHandle;
   dlDir?: FileSystemDirectoryHandle;
-  playlistFile?: FileSystemFileHandle;
   playlist?: Playlist;
+  providers?: Provider[];
   addMusicToPlaylist?: (music: Music) => Promise<void>;
   removeMusicToPlaylist?: (music: Music) => Promise<void>;
+  addProvider?: (provider: Omit<Provider, "uuid">) => Promise<void>;
+  removeProvider?: (provider: Provider) => Promise<void>;
 };
 
 export const OPFSContext = createContext<OPFSState>({});
@@ -18,20 +20,31 @@ export type Playlist = {
   downloaded: Music[];
 };
 
+export type Provider = {
+  uuid: string;
+  name: string;
+  url: string;
+  headers: { name: string; value: string }[];
+};
+
 export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
   const [rootDir, setRootDir] = useState<FileSystemDirectoryHandle>();
   const [dlDir, setDlDir] = useState<FileSystemDirectoryHandle>();
   const [playlistFile, setPlaylistFile] = useState<FileSystemFileHandle>();
   const [playlist, setPlaylist] = useState<Playlist>();
+  const [providersFile, setProvidersFile] = useState<FileSystemFileHandle>();
+  const [providers, setProviders] = useState<Provider[]>([]);
 
   useEffect(() => {
     (async () => {
       const rootHandle = await navigator.storage.getDirectory();
       setRootDir(rootHandle);
+
       const dlHandle = await rootHandle.getDirectoryHandle("downloaded", {
         create: true,
       });
       setDlDir(dlHandle);
+
       const playlistHandle = await rootHandle.getFileHandle("playlist.json", {
         create: true,
       });
@@ -47,6 +60,22 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
         );
         setPlaylist({ downloaded: [] });
       }
+
+      const providersHandle = await rootHandle.getFileHandle("providers.json", {
+        create: true,
+      });
+      setProvidersFile(providersHandle);
+      try {
+        const providers = await providersHandle.getFile();
+        const providersText = await providers.text();
+        setProviders(JSON.parse(providersText));
+      } catch (e) {
+        console.error(
+          `Failed to parse providers file, init a new one. error: `,
+          e
+        );
+        setProviders([]);
+      }
     })();
   }, []);
 
@@ -57,8 +86,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
     setPlaylist(newPlaylist);
     const writable = await playlistFile?.createWritable();
     try {
-      const playlistText = JSON.stringify(newPlaylist);
-      await writable?.write(playlistText);
+      await writable?.write(JSON.stringify(newPlaylist));
     } catch (e) {
       console.error("Failed to write playlist, error:", e);
     } finally {
@@ -82,10 +110,38 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
 
     const writable = await playlistFile?.createWritable();
     try {
-      const playlistText = JSON.stringify(newPlaylist);
-      await writable?.write(playlistText);
+      await writable?.write(JSON.stringify(newPlaylist));
     } catch (e) {
       console.error("Failed to remove from playlist, error:", e);
+    } finally {
+      await writable?.close();
+    }
+  };
+
+  const addProvider = async (provider: Omit<Provider, "uuid">) => {
+    const newProviders = [
+      ...providers,
+      { uuid: crypto.randomUUID(), ...provider },
+    ];
+    setProviders(newProviders);
+    const writable = await providersFile?.createWritable();
+    try {
+      await writable?.write(JSON.stringify(newProviders));
+    } catch (e) {
+      console.error("Failed to write provider, error:", e);
+    } finally {
+      await writable?.close();
+    }
+  };
+
+  const removeProvider = async (provider: Provider) => {
+    const newProviders = providers.filter((p) => p.uuid !== provider.uuid);
+    setProviders(newProviders);
+    const writable = await providersFile?.createWritable();
+    try {
+      await writable?.write(JSON.stringify(newProviders));
+    } catch (e) {
+      console.error("Failed to remove from providers, error:", e);
     } finally {
       await writable?.close();
     }
@@ -96,10 +152,12 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         rootDir,
         dlDir,
-        playlistFile,
         playlist,
         addMusicToPlaylist,
         removeMusicToPlaylist,
+        providers,
+        addProvider,
+        removeProvider,
       }}
     >
       {children}

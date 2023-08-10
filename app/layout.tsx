@@ -1,10 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Inter } from "next/font/google";
-import { AudioPlayer } from "./components/AudioPlayer";
+import { AudioPlayer } from "./libs/components/AudioPlayer";
 import { AudioPlayerProvider } from "./libs/audio-player";
 import { OPFSProvider } from "./libs/opfs";
+import { Navbar } from "./libs/components/Navbar/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,20 +23,14 @@ export default function RootLayout({
       <body className={inter.className}>
         <OPFSProvider>
           <AudioPlayerProvider>
-            <nav>
-              <ul className="flex justify-around items-center p-8">
-                <li>
-                  <Link href="/">Home</Link>
-                </li>
-                <li>
-                  <Link href="/downloaded">Downloaded</Link>
-                </li>
-              </ul>
-            </nav>
+            <Navbar />
+
+            <main className="h-screen container mx-auto">
+              {children}
+              <div className="mt-12" />
+            </main>
 
             <AudioPlayer />
-
-            {children}
           </AudioPlayerProvider>
         </OPFSProvider>
       </body>
