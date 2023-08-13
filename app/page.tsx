@@ -50,6 +50,7 @@ export default function Home() {
         method: 'GET',
         headers: formHeaders(provider.headers),
       })
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
       const data = await res.blob()
       const fileHandle = await dlDir.getFileHandle(
         `${music.musicId}.${music.codec.toLowerCase()}`,
@@ -95,7 +96,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="mt-5 grid grid-cols-6 gap-3">
+      <div className="mt-5 grid grid-cols-6 gap-3 px-2 md:p-0" >
         <select
           className="col-span-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-5"
           onChange={(e) => {
@@ -112,6 +113,7 @@ export default function Home() {
 
         <Button
           className="col-span-2 mb-0 px-3 md:col-span-1"
+          variant="primary"
           onClick={() => {
             setPage(1)
             search(page).then((res) => {
@@ -125,15 +127,16 @@ export default function Home() {
         </Button>
       </div>
 
-      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {searchResult.map((music) => (
           <AudioCard
             key={music.title}
+            className="border-gray-200 dark:border-gray-700 md:border-t"
             audio={{
               title: music.title,
               artist: music.artist,
-              thumbnail: music.covers?.[0].data
-                ? `data:image/jpeg;base64,${music.covers?.[0].data}`
+              thumbnail: music.covers?.[0]?.data
+                ? `data:image/jpeg;base64,${music.covers?.[0]?.data}`
                 : undefined,
             }}
             onClick={() => downloadMusic(music)}
@@ -141,8 +144,9 @@ export default function Home() {
         ))}
       </ul>
 
-      <div className="mt-10 flex w-full justify-between">
+      <div className="mt-4 flex w-full justify-between">
         <Button
+          variant="primary"
           onClick={() => {
             const newPage = Math.max(page - 1, 1)
             setPage(newPage)
@@ -156,6 +160,7 @@ export default function Home() {
           Prev
         </Button>
         <Button
+          variant="primary"
           onClick={() => {
             const newPage = page + 1
             setPage(newPage)

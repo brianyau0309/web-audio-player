@@ -4,7 +4,6 @@ import { useContext } from 'react'
 import { AudioPlayerContext } from '../libs/audio-player'
 import { Music } from '../libs/audio-player/music'
 import { OPFSContext } from '../libs/opfs'
-import { Button } from '../libs/components/Button'
 import AudioCard from './AudioCard'
 
 export default function PlaylistPage() {
@@ -36,15 +35,16 @@ export default function PlaylistPage() {
   return (
     <>
       <h1 className="text-4xl font-bold">Playlist</h1>
-      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {playlist?.downloaded.map((music) => (
           <AudioCard
             key={music.title}
+            className="md:border-t border-gray-200 dark:border-gray-700"
             audio={{
               title: music.title,
               artist: music.artist,
-              thumbnail: music.covers?.[0].data
-                ? `data:image/jpeg;base64,${music.covers?.[0].data}`
+              thumbnail: music.covers?.[0]?.data
+                ? `data:image/jpeg;base64,${music.covers?.[0]?.data}`
                 : undefined,
             }}
             onClick={() => setMusic(music)}

@@ -4,6 +4,7 @@ import { Input } from '../libs/components/Input'
 import { Button } from '../libs/components/Button'
 import { useContext, useState } from 'react'
 import { OPFSContext } from '../libs/opfs'
+import Trash from '../libs/icons/Trash'
 
 const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
   const { addProvider } = useContext(OPFSContext)
@@ -183,6 +184,7 @@ export default function SettingPage() {
     <>
       <div className="mt-5 flex flex-row-reverse">
         <Button
+          variant="primary"
           onClick={() => {
             setShowModal(true)
           }}
@@ -200,23 +202,23 @@ export default function SettingPage() {
       <div>
         <h2 className="text-2xl font-bold">Providers</h2>
         <div className="mt-4">
-          {providers?.map((provider) => (
+          {providers?.concat(providers)?.map((provider) => (
             <div
               key={provider.name}
-              className="flex items-center justify-between rounded-lg border p-4"
+              className="mb-2 flex items-center justify-between rounded-lg border p-4"
             >
               {provider.name}
-              <button
-                className="text-red-500 hover:text-red-700"
+              <Button
+                className="h-8 w-8 text-red-500 hover:text-red-700 p-2"
                 onClick={() => {
                   if (removeProvider) removeProvider(provider)
                 }}
               >
-                Remove
-              </button>
+                <Trash />
+              </Button>
             </div>
           ))}
-        </div>{' '}
+        </div>
       </div>
     </>
   )

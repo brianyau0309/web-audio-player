@@ -25,9 +25,9 @@ export default function RootLayout({
           <AudioPlayerProvider>
             <Navbar />
 
-            <main className="container mx-auto h-screen">
+            <main className="container mx-auto h-screen md:px-4">
               {children}
-              <div className="mt-12" />
+              <div className="mt-10" />
             </main>
 
             <AudioPlayer />

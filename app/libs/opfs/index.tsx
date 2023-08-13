@@ -79,13 +79,14 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
     })()
   }, [])
 
-  const addMusicToPlaylist = async (music: Music) => {
+  const addMusicToPlaylist = async ({ covers, ...music }: Music) => {
     const newPlaylist = {
       downloaded: [...(playlist?.downloaded ?? []), music],
     }
     setPlaylist(newPlaylist)
     const writable = await playlistFile?.createWritable()
     try {
+      await writable?.truncate(0)
       await writable?.write(JSON.stringify(newPlaylist))
     } catch (e) {
       console.error('Failed to write playlist, error:', e)
@@ -110,6 +111,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
 
     const writable = await playlistFile?.createWritable()
     try {
+      await writable?.truncate(0)
       await writable?.write(JSON.stringify(newPlaylist))
     } catch (e) {
       console.error('Failed to remove from playlist, error:', e)
@@ -126,6 +128,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
     setProviders(newProviders)
     const writable = await providersFile?.createWritable()
     try {
+      await writable?.truncate(0)
       await writable?.write(JSON.stringify(newProviders))
     } catch (e) {
       console.error('Failed to write provider, error:', e)
@@ -139,6 +142,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
     setProviders(newProviders)
     const writable = await providersFile?.createWritable()
     try {
+      await writable?.truncate(0)
       await writable?.write(JSON.stringify(newProviders))
     } catch (e) {
       console.error('Failed to remove from providers, error:', e)

@@ -3,6 +3,8 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { OPFSContext } from '../libs/opfs'
 import { Button } from '../libs/components/Button'
+import Trash from '../libs/icons/Trash'
+import AudioCard from '../playlist/AudioCard'
 
 export default function DownloadPage() {
   const { dlDir } = useContext(OPFSContext)
@@ -24,22 +26,25 @@ export default function DownloadPage() {
   }, [dlDir, loadDownloadedFile])
 
   const removeFile = async (file: FileSystemFileHandle) => {
-    dlDir?.removeEntry(file.name)
+    await dlDir?.removeEntry(file.name)
+    loadDownloadedFile()
   }
 
   return (
     <>
       <h1 className="text-4xl font-bold">Download</h1>
-      <ol>
+      <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {downloadList.map((file, index) => (
-          <li className="flex flex-row" key={file.name}>
-            <div>
-              {index + 1}. {file.name}
-            </div>
-            <Button onClick={() => removeFile(file)}>Remove File</Button>
-          </li>
+          <AudioCard
+            className="md:border-t border-gray-200 dark:border-gray-700"
+            key={file.name}
+            audio={{
+              title: file.name,
+            }}
+            onDelete={() => removeFile(file)}
+          />
         ))}
-      </ol>
+      </ul>
     </>
   )
 }
