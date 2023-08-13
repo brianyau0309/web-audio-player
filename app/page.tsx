@@ -1,81 +1,81 @@
-"use client";
+'use client'
 
-import { useContext, useState } from "react";
-import { Music } from "./libs/audio-player/music";
-import { OPFSContext, Provider } from "./libs/opfs";
-import { Button } from "./libs/components/Button";
+import { useContext, useState } from 'react'
+import { Music } from './libs/audio-player/music'
+import { OPFSContext, Provider } from './libs/opfs'
+import { Button } from './libs/components/Button'
 
-const formHeaders = (headers: Provider["headers"]) =>
+const formHeaders = (headers: Provider['headers']) =>
   headers.reduce((acc, cur) => {
-    if (cur.name && cur.value) acc.append(cur.name, cur.value);
-    return acc;
-  }, new Headers());
+    if (cur.name && cur.value) acc.append(cur.name, cur.value)
+    return acc
+  }, new Headers())
 
 export default function Home() {
-  const { dlDir, addMusicToPlaylist, providers } = useContext(OPFSContext);
-  const [searchResult, setSearchResult] = useState<Music[]>([]);
-  const [page, setPage] = useState<number>(1);
-  const [providerId, setProviderId] = useState<string>();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { dlDir, addMusicToPlaylist, providers } = useContext(OPFSContext)
+  const [searchResult, setSearchResult] = useState<Music[]>([])
+  const [page, setPage] = useState<number>(1)
+  const [providerId, setProviderId] = useState<string>()
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const search = async (page: number) => {
-    if (!providerId) return;
-    const provider = providers?.find((p) => p.uuid === providerId);
-    if (!provider) return;
+    if (!providerId) return
+    const provider = providers?.find((p) => p.uuid === providerId)
+    if (!provider) return
 
     const qs = new URLSearchParams({
       limit: String(20),
       skip: String(Math.max(page - 1, 0) * 20),
-    });
+    })
     const res = await fetch(`${provider.url}?${qs.toString()}`, {
-      method: "GET",
+      method: 'GET',
       headers: formHeaders(provider.headers),
-    });
+    })
     if (res.ok) {
-      const data = await res.json();
-      return data;
+      const data = await res.json()
+      return data
     }
-    console.error(res.status, await res.json());
-  };
+    console.error(res.status, await res.json())
+  }
 
   const downloadMusic = async (music: Music) => {
-    if (!dlDir) return;
-    if (!providerId) return;
-    const provider = providers?.find((p) => p.uuid === providerId);
-    if (!provider) return;
-    setIsLoading(true);
+    if (!dlDir) return
+    if (!providerId) return
+    const provider = providers?.find((p) => p.uuid === providerId)
+    if (!provider) return
+    setIsLoading(true)
     try {
       const res = await fetch(`${provider.url}${music.url}`, {
-        method: "GET",
+        method: 'GET',
         headers: formHeaders(provider.headers),
-      });
-      const data = await res.blob();
+      })
+      const data = await res.blob()
       const fileHandle = await dlDir.getFileHandle(
         `${music.musicId}.${music.codec.toLowerCase()}`,
         {
           create: true,
-        }
-      );
-      const writable = await fileHandle.createWritable();
+        },
+      )
+      const writable = await fileHandle.createWritable()
       try {
-        await writable.write(data);
-        await addMusicToPlaylist?.(music);
+        await writable.write(data)
+        await addMusicToPlaylist?.(music)
       } finally {
-        await writable.close();
+        await writable.close()
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
       {isLoading && (
-        <div className="fixed flex justify-center items-center inset-0 bg-black opacity-50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black opacity-50">
           <div role="status">
             <svg
               aria-hidden="true"
-              className="inline w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+              className="mr-2 inline h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
               viewBox="0 0 100 101"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -94,11 +94,11 @@ export default function Home() {
         </div>
       )}
 
-      <div className="grid grid-cols-6 gap-3 mt-5">
+      <div className="mt-5 grid grid-cols-6 gap-3">
         <select
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 col-span-4 md:col-span-5"
+          className="col-span-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-5"
           onChange={(e) => {
-            setProviderId(e.currentTarget.value);
+            setProviderId(e.currentTarget.value)
           }}
         >
           <option value={0}>Select Provider</option>
@@ -110,14 +110,14 @@ export default function Home() {
         </select>
 
         <Button
-          className="col-span-2 px-3 md:col-span-1 mb-0"
+          className="col-span-2 mb-0 px-3 md:col-span-1"
           onClick={() => {
-            setPage(1);
+            setPage(1)
             search(page).then((res) => {
               if (res?.data) {
-                setSearchResult(res.data);
+                setSearchResult(res.data)
               }
-            });
+            })
           }}
         >
           Search
@@ -133,34 +133,34 @@ export default function Home() {
         ))}
       </ul>
 
-      <div className="flex justify-between w-full mt-10">
+      <div className="mt-10 flex w-full justify-between">
         <Button
           onClick={() => {
-            const newPage = Math.max(page - 1, 1);
-            setPage(newPage);
+            const newPage = Math.max(page - 1, 1)
+            setPage(newPage)
             search(newPage).then((res) => {
               if (res?.data) {
-                setSearchResult(res.data);
+                setSearchResult(res.data)
               }
-            });
+            })
           }}
         >
           Prev
         </Button>
         <Button
           onClick={() => {
-            const newPage = page + 1;
-            setPage(newPage);
+            const newPage = page + 1
+            setPage(newPage)
             search(newPage).then((res) => {
               if (res?.data) {
-                setSearchResult(res.data);
+                setSearchResult(res.data)
               }
-            });
+            })
           }}
         >
           Next
         </Button>
       </div>
     </>
-  );
+  )
 }

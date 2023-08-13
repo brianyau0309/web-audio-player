@@ -1,17 +1,17 @@
-import { NavButton } from "./NavButton";
+import { NavButton } from './NavButton'
 
 const navIconProps = {
   className:
-    "w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500",
-  xmlns: "http://www.w3.org/2000/svg",
-  fill: "currentColor",
-  viewBox: "0 0 20 20",
-};
+    'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-500',
+  xmlns: 'http://www.w3.org/2000/svg',
+  fill: 'currentColor',
+  viewBox: '0 0 20 20',
+}
 
 export const Navbar = () => {
   return (
-    <div className="sticky top-0 left-0 z-50 w-full h-10 bg-white dark:bg-gray-700">
-      <div className="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
+    <div className="sticky left-0 top-0 z-50 h-10 w-full bg-white dark:bg-gray-700">
+      <div className="mx-auto grid h-full max-w-lg grid-cols-4 font-medium">
         <NavButton
           // label="Home"
           href="/"
@@ -61,5 +61,5 @@ export const Navbar = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}

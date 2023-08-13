@@ -1,22 +1,22 @@
-"use client";
+'use client'
 
-import { Input } from "../libs/components/Input";
-import { Button } from "../libs/components/Button";
-import { useContext, useState } from "react";
-import { OPFSContext } from "../libs/opfs";
+import { Input } from '../libs/components/Input'
+import { Button } from '../libs/components/Button'
+import { useContext, useState } from 'react'
+import { OPFSContext } from '../libs/opfs'
 
 const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
-  const { addProvider } = useContext(OPFSContext);
-  const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
-  const [headers, setHeaders] = useState<{ name: string; value: string }[]>([]);
+  const { addProvider } = useContext(OPFSContext)
+  const [name, setName] = useState('')
+  const [url, setUrl] = useState('')
+  const [headers, setHeaders] = useState<{ name: string; value: string }[]>([])
 
   return (
     <form
       tabIndex={-1}
       className={
-        "flex justify-center items-center bg-slate-900 bg-opacity-50 fixed top-0 left-0 right-0 z-50 w-full overflow-x-hidden overflow-y-auto md:inset-0 h-full" +
-        (show ? "" : " hidden")
+        'fixed left-0 right-0 top-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden bg-slate-900 bg-opacity-50 md:inset-0' +
+        (show ? '' : ' hidden')
       }
       onSubmit={() => {
         if (addProvider) {
@@ -24,32 +24,32 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
             name,
             url,
             headers,
-          });
+          })
         }
-        close();
-        setName("");
-        setUrl("");
-        setHeaders([]);
+        close()
+        setName('')
+        setUrl('')
+        setHeaders([])
       }}
     >
-      <div className="relative w-full max-w-2xl max-h-full">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+      <div className="relative max-h-full w-full max-w-2xl">
+        <div className="relative rounded-lg bg-white shadow dark:bg-gray-700">
+          <div className="flex items-start justify-between rounded-t border-b p-4 dark:border-gray-600">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
               New Provider
             </h3>
             <button
               type="button"
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
               onClick={() => {
-                close();
-                setName("");
-                setUrl("");
-                setHeaders([]);
+                close()
+                setName('')
+                setUrl('')
+                setHeaders([])
               }}
             >
               <svg
-                className="w-3 h-3"
+                className="h-3 w-3"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 14 14"
@@ -65,7 +65,7 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-          <div className="p-6 space-y-6">
+          <div className="space-y-6 p-6">
             <div>
               <Input
                 placeholder="Provider Name"
@@ -92,9 +92,9 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
                     placeholder="Header name"
                     value={header}
                     onChange={(e) => {
-                      const clone = JSON.parse(JSON.stringify(headers));
-                      clone[index].name = e.target.value;
-                      setHeaders(clone);
+                      const clone = JSON.parse(JSON.stringify(headers))
+                      clone[index].name = e.target.value
+                      setHeaders(clone)
                     }}
                   />
                   <Input
@@ -102,22 +102,22 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
                     placeholder="Header value"
                     value={value}
                     onChange={(e) => {
-                      const clone = JSON.parse(JSON.stringify(headers));
-                      clone[index].value = e.target.value;
-                      setHeaders(clone);
+                      const clone = JSON.parse(JSON.stringify(headers))
+                      clone[index].value = e.target.value
+                      setHeaders(clone)
                     }}
                   />
-                  <div className="flex justify-center col-span-1">
+                  <div className="col-span-1 flex justify-center">
                     <button
-                      className="w-12 h-12 text-red-500 hover:text-red-700 rounded-full flex justify-center items-center"
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-red-500 hover:text-red-700"
                       onClick={() =>
                         setHeaders((current) => {
-                          return current.filter((_, i) => i !== index);
+                          return current.filter((_, i) => i !== index)
                         })
                       }
                     >
                       <svg
-                        className="w-4 h-4"
+                        className="h-4 w-4"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -136,17 +136,17 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
                 </div>
               ))}
               <Button
-                className="flex justify-center items-center"
+                className="flex items-center justify-center"
                 type="button"
                 onClick={() =>
                   setHeaders((current) => {
-                    return [...current, { name: "", value: "" }];
+                    return [...current, { name: '', value: '' }]
                   })
                 }
               >
                 <>
                   <svg
-                    className="w-3 h-3 text-gray-800 dark:text-white"
+                    className="h-3 w-3 text-gray-800 dark:text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 18 18"
@@ -164,7 +164,7 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
               </Button>
             </div>
           </div>
-          <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <div className="flex items-center space-x-2 rounded-b border-t border-gray-200 p-6 dark:border-gray-600">
             <Button className="w-full" type="submit">
               Add
             </Button>
@@ -172,18 +172,18 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
         </div>
       </div>
     </form>
-  );
-};
+  )
+}
 
 export default function SettingPage() {
-  const { providers, removeProvider } = useContext(OPFSContext);
-  const [showModal, setShowModal] = useState(false);
+  const { providers, removeProvider } = useContext(OPFSContext)
+  const [showModal, setShowModal] = useState(false)
   return (
     <>
-      <div className="flex flex-row-reverse mt-5">
+      <div className="mt-5 flex flex-row-reverse">
         <Button
           onClick={() => {
-            setShowModal(true);
+            setShowModal(true)
           }}
         >
           New Provider
@@ -192,7 +192,7 @@ export default function SettingPage() {
       <AddModal
         show={showModal}
         close={() => {
-          setShowModal(false);
+          setShowModal(false)
         }}
       />
 
@@ -202,21 +202,21 @@ export default function SettingPage() {
           {providers?.map((provider) => (
             <div
               key={provider.name}
-              className="flex items-center justify-between p-4 border rounded-lg"
+              className="flex items-center justify-between rounded-lg border p-4"
             >
               {provider.name}
               <button
                 className="text-red-500 hover:text-red-700"
                 onClick={() => {
-                  if (removeProvider) removeProvider(provider);
+                  if (removeProvider) removeProvider(provider)
                 }}
               >
                 Remove
               </button>
             </div>
           ))}
-        </div>{" "}
+        </div>{' '}
       </div>
     </>
-  );
+  )
 }

@@ -1,31 +1,31 @@
-"use client";
+'use client'
 
-import { useCallback, useContext, useEffect, useState } from "react";
-import { OPFSContext } from "../libs/opfs";
-import { Button } from "../libs/components/Button";
+import { useCallback, useContext, useEffect, useState } from 'react'
+import { OPFSContext } from '../libs/opfs'
+import { Button } from '../libs/components/Button'
 
 export default function DownloadPage() {
-  const { dlDir } = useContext(OPFSContext);
-  const [downloadList, setDownloadList] = useState<FileSystemFileHandle[]>([]);
+  const { dlDir } = useContext(OPFSContext)
+  const [downloadList, setDownloadList] = useState<FileSystemFileHandle[]>([])
 
   const loadDownloadedFile = useCallback(async () => {
     if (dlDir) {
-      const files = [];
+      const files = []
       for await (const file of dlDir?.values()) {
-        if (file.kind === "directory") continue;
-        files.push(file);
+        if (file.kind === 'directory') continue
+        files.push(file)
       }
-      setDownloadList(files);
+      setDownloadList(files)
     }
-  }, [dlDir]);
+  }, [dlDir])
 
   useEffect(() => {
-    loadDownloadedFile();
-  }, [dlDir, loadDownloadedFile]);
+    loadDownloadedFile()
+  }, [dlDir, loadDownloadedFile])
 
   const removeFile = async (file: FileSystemFileHandle) => {
-    dlDir?.removeEntry(file.name);
-  };
+    dlDir?.removeEntry(file.name)
+  }
 
   return (
     <>
@@ -41,5 +41,5 @@ export default function DownloadPage() {
         ))}
       </ol>
     </>
-  );
+  )
 }

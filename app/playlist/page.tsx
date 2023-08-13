@@ -1,36 +1,36 @@
-"use client";
+'use client'
 
-import { useContext } from "react";
-import { AudioPlayerContext } from "../libs/audio-player";
-import { Music } from "../libs/audio-player/music";
-import { OPFSContext } from "../libs/opfs";
-import { Button } from "../libs/components/Button";
+import { useContext } from 'react'
+import { AudioPlayerContext } from '../libs/audio-player'
+import { Music } from '../libs/audio-player/music'
+import { OPFSContext } from '../libs/opfs'
+import { Button } from '../libs/components/Button'
 
 export default function PlaylistPage() {
-  const { dlDir, playlist, removeMusicToPlaylist } = useContext(OPFSContext);
-  const { setAudioSrc } = useContext(AudioPlayerContext);
+  const { dlDir, playlist, removeMusicToPlaylist } = useContext(OPFSContext)
+  const { setAudioSrc } = useContext(AudioPlayerContext)
 
   const setMusic = async (music: Music) => {
     if (dlDir) {
       try {
         const file = await dlDir?.getFileHandle(
-          `${music.musicId}.${music.codec.toLowerCase()}`
-        );
-        const url = URL.createObjectURL(await file.getFile());
-        setAudioSrc(url);
+          `${music.musicId}.${music.codec.toLowerCase()}`,
+        )
+        const url = URL.createObjectURL(await file.getFile())
+        setAudioSrc(url)
       } catch (e) {
         console.error(
           `Failed to get file handle for ${
             music.musicId
-          }.${music.codec.toLowerCase()}`
-        );
+          }.${music.codec.toLowerCase()}`,
+        )
       }
     }
-  };
+  }
 
   const removeMusic = async (music: Music) => {
-    if (removeMusicToPlaylist) removeMusicToPlaylist(music);
-  };
+    if (removeMusicToPlaylist) removeMusicToPlaylist(music)
+  }
 
   return (
     <>
@@ -45,5 +45,5 @@ export default function PlaylistPage() {
         ))}
       </ol>
     </>
-  );
+  )
 }
