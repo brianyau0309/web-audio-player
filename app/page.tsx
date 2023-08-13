@@ -4,6 +4,7 @@ import { useContext, useState } from 'react'
 import { Music } from './libs/audio-player/music'
 import { OPFSContext, Provider } from './libs/opfs'
 import { Button } from './libs/components/Button'
+import AudioCard from './playlist/AudioCard'
 
 const formHeaders = (headers: Provider['headers']) =>
   headers.reduce((acc, cur) => {
@@ -24,8 +25,8 @@ export default function Home() {
     if (!provider) return
 
     const qs = new URLSearchParams({
-      limit: String(20),
-      skip: String(Math.max(page - 1, 0) * 20),
+      limit: String(10),
+      skip: String(Math.max(page - 1, 0) * 10),
     })
     const res = await fetch(`${provider.url}?${qs.toString()}`, {
       method: 'GET',
@@ -124,12 +125,19 @@ export default function Home() {
         </Button>
       </div>
 
-      <ul>
+      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
         {searchResult.map((music) => (
-          <li className="flex flex-row" key={music.musicId}>
-            <div>{music.title}</div>
-            <Button onClick={() => downloadMusic(music)}>Download</Button>
-          </li>
+          <AudioCard
+            key={music.title}
+            audio={{
+              title: music.title,
+              artist: music.artist,
+              thumbnail: music.covers?.[0].data
+                ? `data:image/jpeg;base64,${music.covers?.[0].data}`
+                : undefined,
+            }}
+            onClick={() => downloadMusic(music)}
+          />
         ))}
       </ul>
 

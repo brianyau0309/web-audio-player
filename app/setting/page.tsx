@@ -18,7 +18,8 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
         'fixed left-0 right-0 top-0 z-50 flex h-full w-full items-center justify-center overflow-y-auto overflow-x-hidden bg-slate-900 bg-opacity-50 md:inset-0' +
         (show ? '' : ' hidden')
       }
-      onSubmit={() => {
+      onSubmit={(e) => {
+        e.preventDefault()
         if (addProvider) {
           addProvider({
             name,

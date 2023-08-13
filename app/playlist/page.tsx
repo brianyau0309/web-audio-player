@@ -5,6 +5,7 @@ import { AudioPlayerContext } from '../libs/audio-player'
 import { Music } from '../libs/audio-player/music'
 import { OPFSContext } from '../libs/opfs'
 import { Button } from '../libs/components/Button'
+import AudioCard from './AudioCard'
 
 export default function PlaylistPage() {
   const { dlDir, playlist, removeMusicToPlaylist } = useContext(OPFSContext)
@@ -35,15 +36,22 @@ export default function PlaylistPage() {
   return (
     <>
       <h1 className="text-4xl font-bold">Playlist</h1>
-      <ol>
+      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
         {playlist?.downloaded.map((music) => (
-          <li className="flex flex-row" key={music.title}>
-            <div>{music.title}</div>
-            <Button onClick={() => setMusic(music)}>Set Music</Button>
-            <Button onClick={() => removeMusic(music)}>Remove Music</Button>
-          </li>
+          <AudioCard
+            key={music.title}
+            audio={{
+              title: music.title,
+              artist: music.artist,
+              thumbnail: music.covers?.[0].data
+                ? `data:image/jpeg;base64,${music.covers?.[0].data}`
+                : undefined,
+            }}
+            onClick={() => setMusic(music)}
+            onDelete={() => removeMusic(music)}
+          />
         ))}
-      </ol>
+      </ul>
     </>
   )
 }
