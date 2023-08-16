@@ -202,14 +202,14 @@ export default function SettingPage() {
       <div>
         <h2 className="text-2xl font-bold">Providers</h2>
         <div className="mt-4">
-          {providers?.concat(providers)?.map((provider) => (
+          {providers?.map((provider) => (
             <div
               key={provider.name}
               className="mb-2 flex items-center justify-between rounded-lg border p-4"
             >
               {provider.name}
               <Button
-                className="h-8 w-8 text-red-500 hover:text-red-700 p-2"
+                className="h-8 w-8 p-2 text-red-500 hover:text-red-700"
                 onClick={() => {
                   if (removeProvider) removeProvider(provider)
                 }}

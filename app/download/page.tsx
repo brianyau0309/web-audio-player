@@ -36,7 +36,7 @@ export default function DownloadPage() {
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {downloadList.map((file, index) => (
           <AudioCard
-            className="md:border-t border-gray-200 dark:border-gray-700"
+            className="border-gray-200 dark:border-gray-700 md:border-t"
             key={file.name}
             audio={{
               title: file.name,

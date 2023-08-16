@@ -4,7 +4,7 @@ import { useContext } from 'react'
 import { AudioPlayerContext } from '../audio-player'
 
 export const AudioPlayer = () => {
-  const { ref, src } = useContext(AudioPlayerContext)
+  const { ref, src, nextAudio } = useContext(AudioPlayerContext)
 
   return (
     <div className="fixed bottom-0 left-0 z-40 flex w-full">
@@ -13,6 +13,8 @@ export const AudioPlayer = () => {
         ref={ref}
         controls
         src={src}
+        onEnded={() => nextAudio()}
+        autoPlay
       />
     </div>
   )

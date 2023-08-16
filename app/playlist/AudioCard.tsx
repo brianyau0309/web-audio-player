@@ -10,7 +10,7 @@ export type Audio = {
 }
 
 export type AudioCardProps = {
-  className?: string,
+  className?: string
   audio: Audio
   onClick?: () => void
   onDelete?: () => void
@@ -49,7 +49,7 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
         <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
           {onDelete ? (
             <Button
-              className="flex p-2 h-8 w-8 items-center justify-center rounded-full bg-transparent text-red-500 hover:text-red-700"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent p-2 text-red-500 hover:text-red-700"
               onClick={() => onDelete()}
             >
               <Trash />

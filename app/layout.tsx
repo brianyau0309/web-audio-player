@@ -5,6 +5,7 @@ import { AudioPlayer } from './libs/components/AudioPlayer'
 import { AudioPlayerProvider } from './libs/audio-player'
 import { OPFSProvider } from './libs/opfs'
 import { Navbar } from './libs/components/Navbar/Navbar'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <Toaster />
         <OPFSProvider>
           <AudioPlayerProvider>
             <Navbar />

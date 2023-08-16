@@ -2,6 +2,7 @@
 
 import { createContext, useEffect, useState } from 'react'
 import { Music } from '../audio-player/music'
+// import { SQLocal } from 'sqlocal'
 
 export type OPFSState = {
   rootDir?: FileSystemDirectoryHandle
@@ -37,6 +38,10 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     ;(async () => {
+      // const { sql } = new SQLocal('database.sqlite3')
+      // const data = await sql`SELECT * FROM groceries WHERE id > ${"1"}`
+      // console.log(data)
+
       const rootHandle = await navigator.storage.getDirectory()
       setRootDir(rootHandle)
 
@@ -79,7 +84,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
     })()
   }, [])
 
-  const addMusicToPlaylist = async ({ covers, ...music }: Music) => {
+  const addMusicToPlaylist = async (music: Music) => {
     const newPlaylist = {
       downloaded: [...(playlist?.downloaded ?? []), music],
     }

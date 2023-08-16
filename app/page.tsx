@@ -1,10 +1,11 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Music } from './libs/audio-player/music'
 import { OPFSContext, Provider } from './libs/opfs'
 import { Button } from './libs/components/Button'
 import AudioCard from './playlist/AudioCard'
+import { toast } from 'react-hot-toast'
 
 const formHeaders = (headers: Provider['headers']) =>
   headers.reduce((acc, cur) => {
@@ -18,6 +19,14 @@ export default function Home() {
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  // useEffect(() => {
+  //   if ('serviceWorker' in navigator) {
+  //     navigator.serviceWorker
+  //       .register('./worker.js')
+  //       .then((registration) => console.log('scope is: ', registration.scope))
+  //   }
+  // }, [])
 
   const search = async (page: number) => {
     if (!providerId) return
@@ -62,9 +71,13 @@ export default function Home() {
       try {
         await writable.write(data)
         await addMusicToPlaylist?.(music)
+        toast.success('Download success')
       } finally {
         await writable.close()
       }
+    } catch (e) {
+      console.error(e)
+      toast.error('Download failed')
     } finally {
       setIsLoading(false)
     }
@@ -96,7 +109,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="mt-5 grid grid-cols-6 gap-3 px-2 md:p-0" >
+      <div className="mt-5 grid grid-cols-6 gap-3 px-2 md:p-0">
         <select
           className="col-span-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-5"
           onChange={(e) => {
@@ -130,10 +143,13 @@ export default function Home() {
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {searchResult.map((music) => (
           <AudioCard
-            key={music.title}
+            key={music.musicId}
             className="border-gray-200 dark:border-gray-700 md:border-t"
             audio={{
-              title: music.title,
+              title:
+                music.title === 'untitled'
+                  ? music.filename ?? 'untitled'
+                  : music.title,
               artist: music.artist,
               thumbnail: music.covers?.[0]?.data
                 ? `data:image/jpeg;base64,${music.covers?.[0]?.data}`
