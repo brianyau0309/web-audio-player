@@ -32,7 +32,6 @@ export default function DownloadPage() {
 
   return (
     <>
-      <h1 className="text-4xl font-bold">Download</h1>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {downloadList.map((file, index) => (
           <AudioCard

@@ -50,7 +50,10 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
           {onDelete ? (
             <Button
               className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent p-2 text-red-500 hover:text-red-700"
-              onClick={() => onDelete()}
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
             >
               <Trash />
             </Button>

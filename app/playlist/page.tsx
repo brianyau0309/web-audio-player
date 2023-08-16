@@ -16,7 +16,6 @@ export default function PlaylistPage() {
 
   return (
     <>
-      <h1 className="text-4xl font-bold">Playlist</h1>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {playlist?.downloaded.map((music, index) => (
           <AudioCard
