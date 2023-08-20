@@ -27,9 +27,7 @@ export default function PlaylistPage() {
                   ? music.filename ?? 'untitled'
                   : music.title,
               artist: music.artist,
-              thumbnail: music.covers?.[0]?.data
-                ? `data:image/jpeg;base64,${music.covers?.[0]?.data}`
-                : undefined,
+              thumbnail: music.thumbnail ? music.thumbnail : undefined,
             }}
             onClick={() => setAudio(index)}
             onDelete={() => removeMusic(music)}

@@ -1,11 +1,12 @@
 'use client'
 
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import { Music } from './libs/audio-player/music'
 import { OPFSContext, Provider } from './libs/opfs'
 import { Button } from './libs/components/Button'
 import AudioCard from './playlist/AudioCard'
 import { toast } from 'react-hot-toast'
+import { Input } from './libs/components/Input'
 
 const formHeaders = (headers: Provider['headers']) =>
   headers.reduce((acc, cur) => {
@@ -16,6 +17,7 @@ const formHeaders = (headers: Provider['headers']) =>
 export default function Home() {
   const { dlDir, addMusicToPlaylist, providers } = useContext(OPFSContext)
   const [searchResult, setSearchResult] = useState<Music[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -36,6 +38,7 @@ export default function Home() {
     const qs = new URLSearchParams({
       limit: String(10),
       skip: String(Math.max(page - 1, 0) * 10),
+      ...(searchQuery ? { search: searchQuery } : undefined),
     })
     const res = await fetch(`${provider.url}?${qs.toString()}`, {
       method: 'GET',
@@ -111,7 +114,7 @@ export default function Home() {
 
       <div className="mt-5 grid grid-cols-6 gap-3 px-2 md:p-0">
         <select
-          className="col-span-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-5"
+          className="col-span-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
           onChange={(e) => {
             setProviderId(e.currentTarget.value)
           }}
@@ -123,6 +126,23 @@ export default function Home() {
             </option>
           ))}
         </select>
+
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="col-span-4 mb-0"
+          placeholder="Search"
+          onKeyUp={(e) => {
+            if (e.key === 'Enter') {
+              setPage(1)
+              search(page).then((res) => {
+                if (res?.data) {
+                  setSearchResult(res.data)
+                }
+              })
+            }
+          }}
+        />
 
         <Button
           className="col-span-2 mb-0 px-3 md:col-span-1"
@@ -145,15 +165,14 @@ export default function Home() {
           <AudioCard
             key={music.musicId}
             className="border-gray-200 dark:border-gray-700 md:border-t"
+            provider={providers?.find((p) => p.uuid === providerId)}
             audio={{
               title:
                 music.title === 'untitled'
                   ? music.filename ?? 'untitled'
                   : music.title,
               artist: music.artist,
-              thumbnail: music.covers?.[0]?.data
-                ? `data:image/jpeg;base64,${music.covers?.[0]?.data}`
-                : undefined,
+              thumbnail: music.thumbnail ? music.thumbnail : undefined,
             }}
             onClick={() => downloadMusic(music)}
           />

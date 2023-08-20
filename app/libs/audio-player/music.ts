@@ -20,4 +20,5 @@ export type Music = {
   duration?: number
   bitrate?: number
   url: string
+  thumbnail?: string
 }

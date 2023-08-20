@@ -2,6 +2,8 @@ import Image from 'next/image'
 import { Button } from '../libs/components/Button'
 import { cx } from '../libs/cx'
 import Trash from '../libs/icons/Trash'
+import { useEffect, useState } from 'react'
+import { Provider } from '../libs/opfs'
 
 export type Audio = {
   title: string
@@ -12,11 +14,41 @@ export type Audio = {
 export type AudioCardProps = {
   className?: string
   audio: Audio
+  provider?: Provider
   onClick?: () => void
   onDelete?: () => void
 }
 
-const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+const formHeaders = (headers: Provider['headers']) =>
+  headers.reduce((acc, cur) => {
+    if (cur.name && cur.value) acc.append(cur.name, cur.value)
+    return acc
+  }, new Headers())
+
+const AudioCard = ({
+  className,
+  audio,
+  provider,
+  onClick,
+  onDelete,
+}: AudioCardProps) => {
+  const [imgUrl, setImgUrl] = useState('')
+
+  useEffect(() => {
+    async function loadImage() {
+      if (audio.thumbnail && provider?.headers && provider?.url) {
+        const res = await fetch(`${provider.url}${audio.thumbnail}`, {
+          method: 'GET',
+          headers: formHeaders(provider.headers),
+        })
+        if (res.ok) {
+          setImgUrl(URL.createObjectURL(await res.blob()))
+        }
+      }
+    }
+    loadImage()
+  }, [audio.thumbnail, provider?.headers, provider?.url])
+
   return (
     <li
       className={cx(
@@ -27,12 +59,13 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
       onClick={() => {
         if (onClick) onClick()
       }}
+      role={onClick != null ? 'button' : undefined}
     >
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
           <Image
             className="h-24 w-24 rounded-xl bg-white"
-            src={audio.thumbnail ?? '/no-image-audio.png'}
+            src={imgUrl || '/no-image-audio.png'}
             width={100}
             height={100}
             alt="thumbnail"

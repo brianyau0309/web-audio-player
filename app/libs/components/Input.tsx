@@ -1,3 +1,5 @@
+import { cx } from '../cx'
+
 export type InputProps = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
@@ -5,9 +7,11 @@ export type InputProps = React.DetailedHTMLProps<
 
 export const Input = ({ placeholder, className, ...props }: InputProps) => {
   return (
-    <div className={`group relative z-0 mb-6 w-full ${className}`}>
+    <div className={cx('group relative z-0 mb-6 w-full', className)}>
       <input
-        className="peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500"
+        className={
+          'peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-white dark:focus:border-blue-500'
+        }
         placeholder=" "
         {...props}
       />

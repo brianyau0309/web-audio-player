@@ -2,8 +2,6 @@
 
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { OPFSContext } from '../libs/opfs'
-import { Button } from '../libs/components/Button'
-import Trash from '../libs/icons/Trash'
 import AudioCard from '../playlist/AudioCard'
 
 export default function DownloadPage() {
@@ -33,7 +31,7 @@ export default function DownloadPage() {
   return (
     <>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
-        {downloadList.map((file, index) => (
+        {downloadList.map((file) => (
           <AudioCard
             className="border-gray-200 dark:border-gray-700 md:border-t"
             key={file.name}
