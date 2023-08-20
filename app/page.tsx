@@ -112,9 +112,9 @@ export default function Home() {
         </div>
       )}
 
-      <div className="mt-5 grid grid-cols-6 gap-3 px-2 md:p-0">
+      <div className="mt-5 grid grid-cols-12 gap-3 px-2 md:p-0">
         <select
-          className="col-span-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          className="col-span-12 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-3"
           onChange={(e) => {
             setProviderId(e.currentTarget.value)
           }}
@@ -130,7 +130,7 @@ export default function Home() {
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="col-span-4 mb-0"
+          className="col-span-10 mb-0 md:col-span-8"
           placeholder="Search"
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
@@ -145,7 +145,7 @@ export default function Home() {
         />
 
         <Button
-          className="col-span-2 mb-0 px-3 md:col-span-1"
+          className="col-span-2 mb-0 flex items-center justify-center px-1 md:col-span-1"
           variant="primary"
           onClick={() => {
             setPage(1)
@@ -156,7 +156,21 @@ export default function Home() {
             })
           }}
         >
-          Search
+          <svg
+            className="h-4 w-4 text-gray-800 dark:text-white"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 20"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+            />
+          </svg>
         </Button>
       </div>
 
