@@ -1,36 +1,42 @@
 'use client'
 
-import { useContext } from 'react'
-import { AudioPlayerContext } from '../libs/audio-player'
-import { Music } from '../libs/audio-player/music'
-import { OPFSContext } from '../libs/opfs'
-import AudioCard from './AudioCard'
+import { useContext, useEffect, useState } from 'react'
+import { AudioContext } from '../libs/db/audio'
+import AudioCard, { Audio } from './AudioCard'
 
 export default function PlaylistPage() {
-  const { playlist, removeMusicToPlaylist } = useContext(OPFSContext)
-  const { setAudio } = useContext(AudioPlayerContext)
+  const [playlist, setPlaylist] = useState<Audio[]>([])
+  const { fetchAudio, removeAudio } = useContext(AudioContext)
+  // const { setAudio } = useContext(AudioPlayerContext)
 
-  const removeMusic = async (music: Music) => {
-    if (removeMusicToPlaylist) removeMusicToPlaylist(music)
+  useEffect(() => {
+    fetchAudio(100)
+      .then((res) => {
+        setPlaylist(res)
+      })
+      .catch((e) => {
+        if (typeof e === 'object' && e != null && 'message' in e)
+          console.warn(e?.message)
+        else console.error(e)
+      })
+  }, [fetchAudio])
+
+  const removeMusic = async (audio: Audio) => {
+    await removeAudio(audio.id)
+    const res = await fetchAudio(100)
+    setPlaylist(res)
   }
 
   return (
     <>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
-        {playlist?.downloaded.map((music, index) => (
+        {playlist.map((audio) => (
           <AudioCard
-            key={music.musicId}
+            key={audio.id}
             className="border-gray-200 dark:border-gray-700 md:border-t"
-            audio={{
-              title:
-                music.title === 'untitled'
-                  ? music.filename ?? 'untitled'
-                  : music.title,
-              artist: music.artist,
-              thumbnail: music.thumbnail ? music.thumbnail : undefined,
-            }}
-            onClick={() => setAudio(index)}
-            onDelete={() => removeMusic(music)}
+            audio={audio}
+            // onClick={() => setAudio(index)}
+            onDelete={() => removeMusic(audio)}
           />
         ))}
       </ul>

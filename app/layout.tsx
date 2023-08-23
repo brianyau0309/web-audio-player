@@ -6,6 +6,9 @@ import { AudioPlayerProvider } from './libs/audio-player'
 import { OPFSProvider } from './libs/opfs'
 import { Navbar } from './libs/components/Navbar/Navbar'
 import { Toaster } from 'react-hot-toast'
+import { DatabaseProvider } from './libs/db'
+import { AudioProviderProvider } from './libs/db/audio-provider'
+import { AudioProvider } from './libs/db/audio'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,16 +27,22 @@ export default function RootLayout({
       <body className={inter.className}>
         <Toaster />
         <OPFSProvider>
-          <AudioPlayerProvider>
-            <Navbar />
+          <DatabaseProvider>
+            <AudioProviderProvider>
+              <AudioProvider>
+                <AudioPlayerProvider>
+                  <Navbar />
 
-            <main className="container mx-auto h-screen md:px-4">
-              {children}
-              <div className="mt-10" />
-            </main>
+                  <main className="container mx-auto h-screen md:px-4">
+                    {children}
+                    <div className="mt-10" />
+                  </main>
 
-            <AudioPlayer />
-          </AudioPlayerProvider>
+                  <AudioPlayer />
+                </AudioPlayerProvider>
+              </AudioProvider>
+            </AudioProviderProvider>
+          </DatabaseProvider>
         </OPFSProvider>
       </body>
     </html>

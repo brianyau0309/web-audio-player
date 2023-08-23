@@ -2,12 +2,25 @@
 
 import { Input } from '../libs/components/Input'
 import { Button } from '../libs/components/Button'
-import { useContext, useState } from 'react'
-import { OPFSContext } from '../libs/opfs'
+import { useContext, useEffect, useState } from 'react'
 import Trash from '../libs/icons/Trash'
+import { type AudioProviderType, DB } from '../libs/db'
+import { AudioProviderContext } from '../libs/db/audio-provider'
 
-const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
-  const { addProvider } = useContext(OPFSContext)
+const AddModal = ({
+  show,
+  onSubmit,
+  close,
+}: {
+  show: boolean
+  onSubmit: (
+    name: string,
+    url: string,
+    headers: string,
+    providerType: AudioProviderType,
+  ) => Promise<void>
+  close: () => void
+}) => {
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [headers, setHeaders] = useState<{ name: string; value: string }[]>([])
@@ -21,17 +34,12 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
       }
       onSubmit={(e) => {
         e.preventDefault()
-        if (addProvider) {
-          addProvider({
-            name,
-            url,
-            headers,
-          })
-        }
-        close()
-        setName('')
-        setUrl('')
-        setHeaders([])
+        onSubmit(name, url, JSON.stringify(headers), 'selfhost').then(() => {
+          close()
+          setName('')
+          setUrl('')
+          setHeaders([])
+        })
       }}
     >
       <div className="relative max-h-full w-full max-w-2xl">
@@ -178,41 +186,77 @@ const AddModal = ({ show, close }: { show: boolean; close: () => void }) => {
 }
 
 export default function SettingPage() {
-  const { providers, removeProvider } = useContext(OPFSContext)
   const [showModal, setShowModal] = useState(false)
+  const [audioProviders, setAudioProviders] = useState<
+    Pick<DB['audio_provider'], 'id' | 'name'>[]
+  >([])
+  const { removeAudioProvider, fetchAudioProviders, addAudioProvider } =
+    useContext(AudioProviderContext)
+
+  useEffect(() => {
+    fetchAudioProviders(100)
+      .then((result) => {
+        setAudioProviders(result)
+      })
+      .catch((e) => {
+        if (typeof e === 'object' && e != null && 'message' in e)
+          console.warn(e?.message)
+        else console.error(e)
+      })
+  }, [fetchAudioProviders])
+
+  const onAdd = async (
+    name: string,
+    url: string,
+    headers: string,
+    providerType: AudioProviderType,
+  ) => {
+    if (fetchAudioProviders && addAudioProvider) {
+      await addAudioProvider({
+        name,
+        url,
+        headers,
+        provider_type: providerType,
+      })
+      const updated = await fetchAudioProviders(100)
+      setAudioProviders(updated)
+    }
+  }
+
+  const onRemove = async (id: string) => {
+    if (removeAudioProvider && fetchAudioProviders) {
+      await removeAudioProvider(id)
+      const updated = await fetchAudioProviders(100)
+      setAudioProviders(updated)
+    }
+  }
+
   return (
     <>
       <div className="mt-5 flex flex-row-reverse">
-        <Button
-          variant="primary"
-          onClick={() => {
-            setShowModal(true)
-          }}
-        >
+        <Button variant="primary" onClick={() => setShowModal(true)}>
           New Provider
         </Button>
       </div>
       <AddModal
         show={showModal}
-        close={() => {
-          setShowModal(false)
-        }}
+        onSubmit={onAdd}
+        close={() => setShowModal(false)}
       />
 
       <div>
         <h2 className="text-2xl font-bold">Providers</h2>
+
         <div className="mt-4">
-          {providers?.map((provider) => (
+          {audioProviders.map((ap) => (
             <div
-              key={provider.name}
+              key={ap.id}
               className="mb-2 flex items-center justify-between rounded-lg border p-4"
             >
-              {provider.name}
+              {ap.name}
               <Button
                 className="h-8 w-8 p-2 text-red-500 hover:text-red-700"
-                onClick={() => {
-                  if (removeProvider) removeProvider(provider)
-                }}
+                onClick={() => onRemove(ap.id)}
               >
                 <Trash />
               </Button>

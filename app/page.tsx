@@ -1,12 +1,15 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Music } from './libs/audio-player/music'
-import { OPFSContext, Provider } from './libs/opfs'
+import { Provider } from './libs/opfs'
 import { Button } from './libs/components/Button'
 import AudioCard from './playlist/AudioCard'
 import { toast } from 'react-hot-toast'
 import { Input } from './libs/components/Input'
+import { DB } from './libs/db'
+import { AudioContext } from './libs/db/audio'
+import { AudioProviderContext } from './libs/db/audio-provider'
 
 const formHeaders = (headers: Provider['headers']) =>
   headers.reduce((acc, cur) => {
@@ -15,11 +18,19 @@ const formHeaders = (headers: Provider['headers']) =>
   }, new Headers())
 
 export default function Home() {
-  const { dlDir, addMusicToPlaylist, providers } = useContext(OPFSContext)
+  const { addAudio } = useContext(AudioContext)
+  const [providers, setProviders] = useState<
+    Pick<DB['audio_provider'], 'id' | 'name'>[]
+  >([])
+  const { fetchAudioProviders, findAudioProvider } =
+    useContext(AudioProviderContext)
   const [searchResult, setSearchResult] = useState<Music[]>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
+  const [currentProvider, setCurrentProvider] = useState<
+    DB['audio_provider'] | null
+  >(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   // useEffect(() => {
@@ -30,10 +41,23 @@ export default function Home() {
   //   }
   // }, [])
 
+  useEffect(() => {
+    fetchAudioProviders(100)
+      .then((res) => {
+        setProviders(res)
+      })
+      .catch((e) => {
+        if (typeof e === 'object' && e != null && 'message' in e)
+          console.warn(e?.message)
+        else console.error(e)
+      })
+  }, [fetchAudioProviders])
+
   const search = async (page: number) => {
     if (!providerId) return
-    const provider = providers?.find((p) => p.uuid === providerId)
+    const provider = await findAudioProvider(providerId)
     if (!provider) return
+    setCurrentProvider(provider)
 
     const qs = new URLSearchParams({
       limit: String(10),
@@ -41,8 +65,7 @@ export default function Home() {
       ...(searchQuery ? { search: searchQuery } : undefined),
     })
     const res = await fetch(`${provider.url}?${qs.toString()}`, {
-      method: 'GET',
-      headers: formHeaders(provider.headers),
+      headers: formHeaders(JSON.parse(provider.headers)),
     })
     if (res.ok) {
       const data = await res.json()
@@ -52,32 +75,40 @@ export default function Home() {
   }
 
   const downloadMusic = async (music: Music) => {
-    if (!dlDir) return
-    if (!providerId) return
-    const provider = providers?.find((p) => p.uuid === providerId)
-    if (!provider) return
+    if (!currentProvider) return
     setIsLoading(true)
     try {
-      const res = await fetch(`${provider.url}${music.url}`, {
-        method: 'GET',
-        headers: formHeaders(provider.headers),
-      })
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-      const data = await res.blob()
-      const fileHandle = await dlDir.getFileHandle(
-        `${music.musicId}.${music.codec.toLowerCase()}`,
-        {
-          create: true,
+      await addAudio({
+        id: `${currentProvider.id}+${music.musicId}}`,
+        title: music.title,
+        artist: music.artist,
+        thumbnail: music.thumbnail,
+        provider: {
+          id: currentProvider.id,
+          name: currentProvider.name,
+          url: currentProvider.url,
+          headers: [],
         },
-      )
-      const writable = await fileHandle.createWritable()
-      try {
-        await writable.write(data)
-        await addMusicToPlaylist?.(music)
-        toast.success('Download success')
-      } finally {
-        await writable.close()
-      }
+      })
+      // const res = await fetch(`${currentProvider.url}${music.url}`, {
+      //   headers: formHeaders(JSON.parse(currentProvider.headers)),
+      // })
+      // if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+      // const data = await res.blob()
+      // const fileHandle = await dlDir.getFileHandle(
+      //   `${music.musicId}.${music.codec.toLowerCase()}`,
+      //   {
+      //     create: true,
+      //   },
+      // )
+      // const writable = await fileHandle.createWritable()
+      // try {
+      //   await writable.write(data)
+      //   await addMusicToPlaylist?.(music)
+      //   toast.success('Download success')
+      // } finally {
+      //   await writable.close()
+      // }
     } catch (e) {
       console.error(e)
       toast.error('Download failed')
@@ -121,7 +152,7 @@ export default function Home() {
         >
           <option value={0}>Select Provider</option>
           {providers?.map((provider) => (
-            <option key={provider.uuid} value={provider.uuid}>
+            <option key={provider.id} value={provider.id}>
               {provider.name}
             </option>
           ))}
@@ -179,14 +210,22 @@ export default function Home() {
           <AudioCard
             key={music.musicId}
             className="border-gray-200 dark:border-gray-700 md:border-t"
-            provider={providers?.find((p) => p.uuid === providerId)}
             audio={{
+              id: `${currentProvider?.id ?? ''}-{music.musicId}}`,
               title:
                 music.title === 'untitled'
                   ? music.filename ?? 'untitled'
                   : music.title,
               artist: music.artist,
               thumbnail: music.thumbnail ? music.thumbnail : undefined,
+              provider: currentProvider
+                ? {
+                  id: currentProvider.id,
+                  name: currentProvider.name,
+                  url: currentProvider.url,
+                  headers: JSON.parse(currentProvider.headers),
+                }
+                : { id: '', name: '', url: '', headers: [] },
             }}
             onClick={() => downloadMusic(music)}
           />
@@ -208,6 +247,7 @@ export default function Home() {
         >
           Prev
         </Button>
+
         <Button
           variant="primary"
           onClick={() => {

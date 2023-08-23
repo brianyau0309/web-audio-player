@@ -6,9 +6,11 @@ import { useEffect, useState } from 'react'
 import { Provider } from '../libs/opfs'
 
 export type Audio = {
+  id: string
   title: string
   artist?: string
   thumbnail?: string
+  provider: Provider
 }
 
 export type AudioCardProps = {
@@ -25,29 +27,56 @@ const formHeaders = (headers: Provider['headers']) =>
     return acc
   }, new Headers())
 
-const AudioCard = ({
-  className,
-  audio,
-  provider,
-  onClick,
-  onDelete,
-}: AudioCardProps) => {
+const ImageSkeleton = (props: {
+  className?: string
+  iconClassName?: string
+}) => (
+  <div
+    className={cx(
+      'flex animate-pulse items-center justify-center rounded bg-gray-300 dark:bg-gray-700',
+      props.className,
+    )}
+  >
+    <svg
+      className={cx(
+        'h-10 w-10 text-gray-200 dark:text-gray-600',
+        props.iconClassName,
+      )}
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      viewBox="0 0 20 18"
+    >
+      <path d="M18 0H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.376 10.481A1 1 0 0 1 16 15H4a1 1 0 0 1-.895-1.447l3.5-7A1 1 0 0 1 7.468 6a.965.965 0 0 1 .9.5l2.775 4.757 1.546-1.887a1 1 0 0 1 1.618.1l2.541 4a1 1 0 0 1 .028 1.011Z" />
+    </svg>
+  </div>
+)
+
+const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+  const [isLoading, setIsLoading] = useState(true)
   const [imgUrl, setImgUrl] = useState('')
 
   useEffect(() => {
     async function loadImage() {
-      if (audio.thumbnail && provider?.headers && provider?.url) {
-        const res = await fetch(`${provider.url}${audio.thumbnail}`, {
-          method: 'GET',
-          headers: formHeaders(provider.headers),
+      if (audio.thumbnail && audio.provider?.headers && audio.provider?.url) {
+        const res = await fetch(`${audio.provider.url}${audio.thumbnail}`, {
+          headers: formHeaders(audio.provider.headers),
         })
         if (res.ok) {
           setImgUrl(URL.createObjectURL(await res.blob()))
+        } else {
+          setImgUrl('/no-image-audio.png')
         }
+      } else {
+        setImgUrl('/no-image-audio.png')
       }
     }
-    loadImage()
-  }, [audio.thumbnail, provider?.headers, provider?.url])
+    try {
+      loadImage()
+    } finally {
+      setIsLoading(false)
+    }
+  }, [audio])
 
   return (
     <li
@@ -63,13 +92,18 @@ const AudioCard = ({
     >
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
-          <Image
-            className="h-24 w-24 rounded-xl bg-white"
-            src={imgUrl || '/no-image-audio.png'}
-            width={100}
-            height={100}
-            alt="thumbnail"
-          />
+          {isLoading || !imgUrl ? (
+            <ImageSkeleton className="h-24 w-24" />
+          ) : (
+            <Image
+              className="h-24 w-24 rounded-xl bg-white"
+              src={imgUrl}
+              width={100}
+              height={100}
+              alt="audio thumbnail"
+              priority
+            />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
