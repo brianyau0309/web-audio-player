@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { OPFSContext } from '../libs/opfs'
 import AudioCard from '../playlist/AudioCard'
+import { OPFSContext } from '@/libs/state/opfs'
 
 export default function DownloadPage() {
   const { dlDir } = useContext(OPFSContext)
@@ -36,7 +36,10 @@ export default function DownloadPage() {
             className="border-gray-200 dark:border-gray-700 md:border-t"
             key={file.name}
             audio={{
+              id: file.name,
               title: file.name,
+              url: '',
+              provider: { id: '', name: '', url: '', headers: [] },
             }}
             onDelete={() => removeFile(file)}
           />

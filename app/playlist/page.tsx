@@ -1,25 +1,15 @@
 'use client'
 
-import { useContext, useEffect, useState } from 'react'
-import { AudioContext } from '../libs/db/audio'
+import { useContext } from 'react'
+import { AudioContext } from '@/libs/state/db/audio'
 import AudioCard, { Audio } from './AudioCard'
+import { AudioPlayerContext } from '@/libs/state/audio-player'
+import cx from '@/libs/cx'
 
 export default function PlaylistPage() {
-  const [playlist, setPlaylist] = useState<Audio[]>([])
   const { fetchAudio, removeAudio } = useContext(AudioContext)
-  // const { setAudio } = useContext(AudioPlayerContext)
-
-  useEffect(() => {
-    fetchAudio(100)
-      .then((res) => {
-        setPlaylist(res)
-      })
-      .catch((e) => {
-        if (typeof e === 'object' && e != null && 'message' in e)
-          console.warn(e?.message)
-        else console.error(e)
-      })
-  }, [fetchAudio])
+  const { currentIndex, setCurrentIndex: setAudio, playlist, setPlaylist } =
+    useContext(AudioPlayerContext)
 
   const removeMusic = async (audio: Audio) => {
     await removeAudio(audio.id)
@@ -30,12 +20,14 @@ export default function PlaylistPage() {
   return (
     <>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
-        {playlist.map((audio) => (
+        {playlist.map((audio, index) => (
           <AudioCard
             key={audio.id}
-            className="border-gray-200 dark:border-gray-700 md:border-t"
+            className={cx('border-gray-200 dark:border-gray-700 md:border-t', {
+              'bg-slate-900': index === currentIndex,
+            })}
             audio={audio}
-            // onClick={() => setAudio(index)}
+            onClick={() => setAudio(index)}
             onDelete={() => removeMusic(audio)}
           />
         ))}

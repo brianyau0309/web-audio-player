@@ -3,9 +3,9 @@
 import { Input } from '../libs/components/Input'
 import { Button } from '../libs/components/Button'
 import { useContext, useEffect, useState } from 'react'
-import Trash from '../libs/icons/Trash'
-import { type AudioProviderType, DB } from '../libs/db'
-import { AudioProviderContext } from '../libs/db/audio-provider'
+import Trash from '@/libs/components/icons/Trash'
+import { AudioProviderType, DB } from '@/libs/state/db'
+import { AudioProviderContext } from '@/libs/state/db/audio-provider'
 
 const AddModal = ({
   show,

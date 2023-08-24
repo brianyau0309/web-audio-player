@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext } from 'react'
-import { type DB, DatabaseContext, notReady } from '@/app/libs/db'
+import { DB, DatabaseContext } from '.';
 
 export type AudioProviderState = {
   setAudioProviders?: React.Dispatch<
@@ -18,6 +18,10 @@ export type AudioProviderState = {
   removeAudioProvider: (
     audioProviderId: DB['audio_provider']['id'],
   ) => Promise<void>
+}
+
+const notReady = (): never => {
+  throw new Error('Database is not initialized')
 }
 
 export const AudioProviderContext = createContext<AudioProviderState>({

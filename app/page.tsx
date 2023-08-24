@@ -1,31 +1,29 @@
 'use client'
 
+import { Button } from '@/libs/components/Button'
+import { Input } from '@/libs/components/Input'
+import { AudioPlayerContext } from '@/libs/state/audio-player'
+import { Music } from '@/libs/state/audio-player/music'
+import { DB } from '@/libs/state/db'
+import { AudioContext } from '@/libs/state/db/audio'
+import { AudioProviderContext } from '@/libs/state/db/audio-provider'
+import { formHeaders } from '@/libs/utils/http'
 import { useContext, useEffect, useState } from 'react'
-import { Music } from './libs/audio-player/music'
-import { Provider } from './libs/opfs'
-import { Button } from './libs/components/Button'
-import AudioCard from './playlist/AudioCard'
 import { toast } from 'react-hot-toast'
-import { Input } from './libs/components/Input'
-import { DB } from './libs/db'
-import { AudioContext } from './libs/db/audio'
-import { AudioProviderContext } from './libs/db/audio-provider'
-
-const formHeaders = (headers: Provider['headers']) =>
-  headers.reduce((acc, cur) => {
-    if (cur.name && cur.value) acc.append(cur.name, cur.value)
-    return acc
-  }, new Headers())
+import AudioCard from './playlist/AudioCard'
+import Search from './libs/components/icons/Search'
+import Spinner from './libs/components/icons/Spinner'
 
 export default function Home() {
   const { addAudio } = useContext(AudioContext)
+  const { setPlaylist } = useContext(AudioPlayerContext)
   const [providers, setProviders] = useState<
     Pick<DB['audio_provider'], 'id' | 'name'>[]
   >([])
   const { fetchAudioProviders, findAudioProvider } =
     useContext(AudioProviderContext)
-  const [searchResult, setSearchResult] = useState<Music[]>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [searchResult, setSearchResult] = useState<Music[]>([])
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
   const [currentProvider, setCurrentProvider] = useState<
@@ -78,40 +76,24 @@ export default function Home() {
     if (!currentProvider) return
     setIsLoading(true)
     try {
-      await addAudio({
-        id: `${currentProvider.id}+${music.musicId}}`,
+      const newAudio = await addAudio({
+        id: `${currentProvider.id}+${music.musicId}`,
         title: music.title,
         artist: music.artist,
         thumbnail: music.thumbnail,
+        url: music.url,
         provider: {
           id: currentProvider.id,
           name: currentProvider.name,
           url: currentProvider.url,
-          headers: [],
+          headers: JSON.parse(currentProvider.headers),
         },
       })
-      // const res = await fetch(`${currentProvider.url}${music.url}`, {
-      //   headers: formHeaders(JSON.parse(currentProvider.headers)),
-      // })
-      // if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-      // const data = await res.blob()
-      // const fileHandle = await dlDir.getFileHandle(
-      //   `${music.musicId}.${music.codec.toLowerCase()}`,
-      //   {
-      //     create: true,
-      //   },
-      // )
-      // const writable = await fileHandle.createWritable()
-      // try {
-      //   await writable.write(data)
-      //   await addMusicToPlaylist?.(music)
-      //   toast.success('Download success')
-      // } finally {
-      //   await writable.close()
-      // }
+      setPlaylist((prev) => [...prev, newAudio])
+      toast.success('Download success')
     } catch (e) {
       console.error(e)
-      toast.error('Download failed')
+      toast.error('Failed to add audio to playlist')
     } finally {
       setIsLoading(false)
     }
@@ -122,33 +104,30 @@ export default function Home() {
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black opacity-50">
           <div role="status">
-            <svg
-              aria-hidden="true"
-              className="mr-2 inline h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
+            <Spinner className="mr-2 inline h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600" />
             <span className="sr-only">Loading...</span>
           </div>
         </div>
       )}
 
-      <div className="mt-5 grid grid-cols-12 gap-3 px-2 md:p-0">
+      <form
+        className="mt-5 grid grid-cols-12 gap-3 px-2 md:p-0"
+        onSubmit={(e) => {
+          e.preventDefault()
+          setPage(1)
+          search(page).then((res) => {
+            if (res?.data) {
+              setSearchResult(res.data)
+            }
+          })
+        }}
+      >
         <select
-          className="col-span-12 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 md:col-span-3"
+          className="col-span-12 block w-full appearance-none border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2.5 text-sm text-gray-500 focus:border-gray-200 focus:outline-none focus:ring-0 dark:border-gray-700 dark:text-gray-400 md:col-span-3"
           onChange={(e) => {
             setProviderId(e.currentTarget.value)
           }}
+          required
         >
           <option value={0}>Select Provider</option>
           {providers?.map((provider) => (
@@ -162,48 +141,17 @@ export default function Home() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="col-span-10 mb-0 md:col-span-8"
-          placeholder="Search"
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              setPage(1)
-              search(page).then((res) => {
-                if (res?.data) {
-                  setSearchResult(res.data)
-                }
-              })
-            }
-          }}
+          placeholder="Search Audio"
         />
 
         <Button
           className="col-span-2 mb-0 flex items-center justify-center px-1 md:col-span-1"
           variant="primary"
-          onClick={() => {
-            setPage(1)
-            search(page).then((res) => {
-              if (res?.data) {
-                setSearchResult(res.data)
-              }
-            })
-          }}
+          type="submit"
         >
-          <svg
-            className="h-4 w-4 text-gray-800 dark:text-white"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 20 20"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-            />
-          </svg>
+          <Search className="h-4 w-4 text-gray-800 dark:text-white" />
         </Button>
-      </div>
+      </form>
 
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
         {searchResult.map((music) => (
@@ -218,6 +166,7 @@ export default function Home() {
                   : music.title,
               artist: music.artist,
               thumbnail: music.thumbnail ? music.thumbnail : undefined,
+              url: music.url,
               provider: currentProvider
                 ? {
                   id: currentProvider.id,

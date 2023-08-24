@@ -3,6 +3,8 @@
 import { Generated, Kysely } from 'kysely'
 import { createContext, useEffect, useState } from 'react'
 import { SQLocalKysely } from 'sqlocal/kysely'
+import { AudioProvider } from './audio'
+import { AudioProviderProvider } from './audio-provider'
 
 const InitialMigration: {
   version: number
@@ -88,7 +90,7 @@ export type DB = {
   }
 }
 
-export const notReady = (): never => {
+const notReady = (): never => {
   throw new Error('Database is not initialized')
 }
 
@@ -108,6 +110,7 @@ export const DatabaseProvider = ({
   children: React.ReactNode
 }) => {
   const [database, setDatabase] = useState<Kysely<DB>>()
+
   function getDatabase() {
     if (database === undefined) return notReady()
     return database
@@ -142,7 +145,9 @@ export const DatabaseProvider = ({
 
   return (
     <DatabaseContext.Provider value={getDatabase}>
-      {children}
+      <AudioProviderProvider>
+        <AudioProvider>{children}</AudioProvider>
+      </AudioProviderProvider>
     </DatabaseContext.Provider>
   )
 }

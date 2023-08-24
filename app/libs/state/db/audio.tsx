@@ -1,15 +1,20 @@
 'use client'
 
-import { Audio } from '@/app/playlist/AudioCard'
+import { Audio } from '@/playlist/AudioCard'
 import { createContext, useContext } from 'react'
-import { DB, DatabaseContext, notReady } from '.'
+import { DB, DatabaseContext } from '.'
 import { OPFSContext } from '../opfs'
+import { formHeaders } from '@/libs/utils/http'
 
 export type AudioState = {
   fetchAudio: (limit: number, offset?: number) => Promise<Audio[]>
   findAudio: (id: DB['audio']['id']) => Promise<Audio | null>
-  addAudio: (audio: Audio) => Promise<void>
+  addAudio: (audio: Audio) => Promise<Audio>
   removeAudio: (id: DB['audio']['id']) => Promise<void>
+}
+
+const notReady = (): never => {
+  throw new Error('Database is not initialized')
 }
 
 export const AudioContext = createContext<AudioState>({
@@ -20,8 +25,8 @@ export const AudioContext = createContext<AudioState>({
 })
 
 export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
-  const { dlDir } = useContext(OPFSContext)
   const db = useContext(DatabaseContext)
+  const { dlDir } = useContext(OPFSContext)
 
   const fetchAudio = async (
     limit: number,
@@ -37,7 +42,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
         'audio_provider.headers',
         'audio_provider.url as provider_url',
       ])
-      .orderBy('created_at', 'desc')
+      .orderBy('created_at', 'asc')
       .limit(limit)
       .offset(offset)
       .execute()
@@ -47,6 +52,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       title: audio.title,
       artist: audio.artist,
       thumbnail: audio.thumbnail,
+      url: audio.url,
       provider: {
         id: audio.provider_id,
         name: audio.provider_name,
@@ -77,6 +83,7 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
       title: audio.title,
       artist: audio.artist,
       thumbnail: audio.thumbnail,
+      url: audio.url,
       provider: {
         id: audio.provider_id,
         name: audio.provider_name,
@@ -87,26 +94,49 @@ export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const addAudio = async (audio: Audio) => {
-    await db()
+    if (!dlDir) throw new Error('Filesystem is not ready')
+    return await db()
       .transaction()
       .execute(async (trx) => {
-        await trx
-          .insertInto('audio')
-          .values({
-            id: audio.id,
-            title: audio.title,
-            artist: audio.artist,
-            thumbnail: audio.thumbnail,
-            url: '',
-            downloaded: true,
-            provider_id: audio.provider.id,
-          })
-          .execute()
+        const newAudio = {
+          id: audio.id,
+          title: audio.title,
+          artist: audio.artist,
+          thumbnail: audio.thumbnail,
+          url: audio.url,
+          downloaded: true,
+          provider_id: audio.provider.id,
+        }
+        await trx.insertInto('audio').values(newAudio).execute()
+
+        const res = await fetch(`${audio.provider.url}${audio.url}`, {
+          headers: formHeaders(audio.provider.headers),
+        })
+        if (!res.ok) throw new Error('Failed to download audio')
+
+        const file = await dlDir.getFileHandle(`${audio.id}`, {
+          create: true,
+        })
+        const writable = await file.createWritable()
+        try {
+          await writable.truncate(0)
+          await writable.write(await res.blob())
+        } finally {
+          await writable.close()
+        }
+
+        return audio
       })
   }
 
   const removeAudio = async (id: DB['audio']['id']) => {
-    await db().deleteFrom('audio').where('id', '=', id).execute()
+    if (!dlDir) throw new Error('Filesystem is not ready')
+    await db()
+      .transaction()
+      .execute(async (trx) => {
+        await trx.deleteFrom('audio').where('id', '=', id).execute()
+        await dlDir.removeEntry(`${id}`)
+      })
   }
 
   return (
