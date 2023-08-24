@@ -14,7 +14,8 @@ const InitialMigration: {
   version: 0,
   description: 'Create migration table',
   async execute(sql) {
-    await sql`CREATE TABLE IF NOT EXISTS migration (
+    await sql`PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS migration (
   version INTEGER PRIMARY KEY ,
   description TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -119,8 +120,6 @@ export const DatabaseProvider = ({
   useEffect(() => {
     async function prepareDatabase() {
       const { dialect, sql, transaction } = new SQLocalKysely('db.sqlite3')
-      const database = new Kysely<DB>({ dialect })
-
       try {
         await InitialMigration.execute(sql)
         const result = await sql`SELECT MAX(version) version FROM migration`
@@ -132,12 +131,9 @@ export const DatabaseProvider = ({
             migration.query(sql),
           ])
         }
-        setDatabase(database)
+        setDatabase(new Kysely<DB>({ dialect }))
       } catch (e) {
-        console.error(
-          'Something Wrong During Migration. Please Check the Error:',
-          e,
-        )
+        console.error('Error During Migration:', e)
       }
     }
     prepareDatabase()
