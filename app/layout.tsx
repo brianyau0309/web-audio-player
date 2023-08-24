@@ -1,11 +1,10 @@
-import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { AudioPlayer } from './libs/components/AudioPlayer'
-import { AudioPlayerProvider } from './libs/audio-player'
-import { OPFSProvider } from './libs/opfs'
-import { Navbar } from './libs/components/Navbar/Navbar'
 import { Toaster } from 'react-hot-toast'
+import './globals.css'
+import { AudioPlayer } from './libs/components/AudioPlayer'
+import { Navbar } from './libs/components/Navbar/Navbar'
+import AppStateProvider from './libs/state'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,18 +22,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Toaster />
-        <OPFSProvider>
-          <AudioPlayerProvider>
-            <Navbar />
+        <AppStateProvider>
+          <Navbar />
 
-            <main className="container mx-auto h-screen md:px-4">
-              {children}
-              <div className="mt-10" />
-            </main>
+          <main className="container mx-auto h-screen md:px-4">
+            {children}
+            <div className="mt-10" />
+          </main>
 
-            <AudioPlayer />
-          </AudioPlayerProvider>
-        </OPFSProvider>
+          <AudioPlayer />
+        </AppStateProvider>
       </body>
     </html>
   )

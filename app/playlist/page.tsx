@@ -1,36 +1,34 @@
 'use client'
 
 import { useContext } from 'react'
-import { AudioPlayerContext } from '../libs/audio-player'
-import { Music } from '../libs/audio-player/music'
-import { OPFSContext } from '../libs/opfs'
-import AudioCard from './AudioCard'
+import { AudioContext } from '@/libs/state/db/audio'
+import AudioCard, { Audio } from './AudioCard'
+import { AudioPlayerContext } from '@/libs/state/audio-player'
+import cx from '@/libs/cx'
 
 export default function PlaylistPage() {
-  const { playlist, removeMusicToPlaylist } = useContext(OPFSContext)
-  const { setAudio } = useContext(AudioPlayerContext)
+  const { fetchAudio, removeAudio } = useContext(AudioContext)
+  const { currentIndex, setCurrentIndex, playlist, setPlaylist } =
+    useContext(AudioPlayerContext)
 
-  const removeMusic = async (music: Music) => {
-    if (removeMusicToPlaylist) removeMusicToPlaylist(music)
+  const removeMusic = async (audio: Audio) => {
+    await removeAudio(audio.id)
+    const res = await fetchAudio(100)
+    setPlaylist(res)
   }
 
   return (
     <>
       <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
-        {playlist?.downloaded.map((music, index) => (
+        {playlist.map((audio, index) => (
           <AudioCard
-            key={music.musicId}
-            className="border-gray-200 dark:border-gray-700 md:border-t"
-            audio={{
-              title:
-                music.title === 'untitled'
-                  ? music.filename ?? 'untitled'
-                  : music.title,
-              artist: music.artist,
-              thumbnail: music.thumbnail ? music.thumbnail : undefined,
-            }}
-            onClick={() => setAudio(index)}
-            onDelete={() => removeMusic(music)}
+            key={audio.id}
+            className={cx('border-gray-200 dark:border-gray-700 md:border-t', {
+              'bg-slate-900': index === currentIndex,
+            })}
+            audio={audio}
+            onClick={() => setCurrentIndex(index)}
+            onDelete={() => removeMusic(audio)}
           />
         ))}
       </ul>

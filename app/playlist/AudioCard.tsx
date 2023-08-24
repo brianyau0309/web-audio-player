@@ -1,14 +1,21 @@
+import { Button } from '@/libs/components/Button'
+import { ImageSkeleton } from '@/libs/components/ImageSkeleton'
+import Trash from '@/libs/components/icons/Trash'
+import cx from '@/libs/cx'
+import { Provider } from '@/libs/state/opfs'
+import { formHeaders } from '@/libs/utils/http'
 import Image from 'next/image'
-import { Button } from '../libs/components/Button'
-import { cx } from '../libs/cx'
-import Trash from '../libs/icons/Trash'
 import { useEffect, useState } from 'react'
-import { Provider } from '../libs/opfs'
+
+const defaultImagePath = '/no-image-audio.png'
 
 export type Audio = {
+  id: string
   title: string
   artist?: string
   thumbnail?: string
+  url: string
+  provider: Provider
 }
 
 export type AudioCardProps = {
@@ -19,57 +26,52 @@ export type AudioCardProps = {
   onDelete?: () => void
 }
 
-const formHeaders = (headers: Provider['headers']) =>
-  headers.reduce((acc, cur) => {
-    if (cur.name && cur.value) acc.append(cur.name, cur.value)
-    return acc
-  }, new Headers())
-
-const AudioCard = ({
-  className,
-  audio,
-  provider,
-  onClick,
-  onDelete,
-}: AudioCardProps) => {
+const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+  const [isLoading, setIsLoading] = useState(true)
   const [imgUrl, setImgUrl] = useState('')
 
   useEffect(() => {
     async function loadImage() {
-      if (audio.thumbnail && provider?.headers && provider?.url) {
-        const res = await fetch(`${provider.url}${audio.thumbnail}`, {
-          method: 'GET',
-          headers: formHeaders(provider.headers),
+      if (audio.thumbnail) {
+        const res = await fetch(`${audio.provider.url}${audio.thumbnail}`, {
+          headers: formHeaders(audio.provider.headers),
         })
         if (res.ok) {
           setImgUrl(URL.createObjectURL(await res.blob()))
-        }
-      }
+        } else setImgUrl(defaultImagePath)
+      } else setImgUrl(defaultImagePath)
     }
-    loadImage()
-  }, [audio.thumbnail, provider?.headers, provider?.url])
+    try {
+      loadImage()
+    } finally {
+      setIsLoading(false)
+    }
+  }, [audio])
 
   return (
     <li
       className={cx(
         'px-2 py-3 sm:py-4',
-        onClick != null ? 'cursor-pointer hover:bg-slate-950' : '',
+        onClick != null ? 'cursor-pointer hover:bg-slate-900' : '',
         className,
       )}
-      onClick={() => {
-        if (onClick) onClick()
-      }}
       role={onClick != null ? 'button' : undefined}
+      onClick={() => onClick && onClick()}
     >
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
-          <Image
-            className="h-24 w-24 rounded-xl bg-white"
-            src={imgUrl || '/no-image-audio.png'}
-            width={100}
-            height={100}
-            alt="thumbnail"
-          />
+          {isLoading || !imgUrl ? (
+            <ImageSkeleton className="h-20 w-20" />
+          ) : (
+            <Image
+              className="h-20 w-20 rounded-xl bg-white"
+              src={imgUrl}
+              width={80}
+              height={80}
+              alt="audio thumbnail"
+              priority
+            />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-white">

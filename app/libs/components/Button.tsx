@@ -1,4 +1,4 @@
-import { cx } from '../cx'
+import cx from '../cx'
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary'
