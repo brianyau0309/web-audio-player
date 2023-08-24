@@ -24,7 +24,7 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
   const [dlDir, setDlDir] = useState<FileSystemDirectoryHandle>()
 
   useEffect(() => {
-    ; (async () => {
+    ;(async () => {
       const rootHandle = await navigator.storage.getDirectory()
       const dlHandle = await rootHandle.getDirectoryHandle('downloaded', {
         create: true,

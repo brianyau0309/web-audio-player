@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext } from 'react'
-import { DB, DatabaseContext } from '.';
+import { DB, DatabaseContext } from '.'
 
 export type AudioProviderState = {
   setAudioProviders?: React.Dispatch<

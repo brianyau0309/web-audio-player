@@ -29,11 +29,11 @@ const Migrations: {
   description: string
   query: (sql: TransactionSql) => ReturnType<TransactionSql>
 }[] = [
-    {
-      version: 1,
-      description: 'Create table audio_provider',
-      query(sql) {
-        return sql`CREATE TABLE audio_provider (
+  {
+    version: 1,
+    description: 'Create table audio_provider',
+    query(sql) {
+      return sql`CREATE TABLE audio_provider (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
@@ -41,13 +41,13 @@ const Migrations: {
   provider_type TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );`
-      },
     },
-    {
-      version: 2,
-      description: 'Create table audio',
-      query(sql) {
-        return sql`CREATE TABLE audio (
+  },
+  {
+    version: 2,
+    description: 'Create table audio',
+    query(sql) {
+      return sql`CREATE TABLE audio (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   url TEXT NOT NULL,
@@ -58,9 +58,9 @@ const Migrations: {
   thumbnail TEXT,
   FOREIGN KEY (provider_id) REFERENCES audio_provider (id)
 );`
-      },
     },
-  ]
+  },
+]
 
 export const AudioProviderType = {
   SELFHOST: 'selfhost',

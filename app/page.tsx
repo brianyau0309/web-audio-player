@@ -169,11 +169,11 @@ export default function Home() {
               url: music.url,
               provider: currentProvider
                 ? {
-                  id: currentProvider.id,
-                  name: currentProvider.name,
-                  url: currentProvider.url,
-                  headers: JSON.parse(currentProvider.headers),
-                }
+                    id: currentProvider.id,
+                    name: currentProvider.name,
+                    url: currentProvider.url,
+                    headers: JSON.parse(currentProvider.headers),
+                  }
                 : { id: '', name: '', url: '', headers: [] },
             }}
             onClick={() => downloadMusic(music)}

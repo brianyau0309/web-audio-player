@@ -8,7 +8,7 @@ import cx from '@/libs/cx'
 
 export default function PlaylistPage() {
   const { fetchAudio, removeAudio } = useContext(AudioContext)
-  const { currentIndex, setCurrentIndex: setAudio, playlist, setPlaylist } =
+  const { currentIndex, setCurrentIndex, playlist, setPlaylist } =
     useContext(AudioPlayerContext)
 
   const removeMusic = async (audio: Audio) => {
@@ -27,7 +27,7 @@ export default function PlaylistPage() {
               'bg-slate-900': index === currentIndex,
             })}
             audio={audio}
-            onClick={() => setAudio(index)}
+            onClick={() => setCurrentIndex(index)}
             onDelete={() => removeMusic(audio)}
           />
         ))}

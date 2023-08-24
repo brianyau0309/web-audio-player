@@ -26,10 +26,10 @@ export type AudioPlayerState = {
 export const AudioPlayerContext = createContext<AudioPlayerState>({
   src: '',
   currentIndex: -1,
-  setCurrentIndex: async () => { },
+  setCurrentIndex: async () => {},
   nextAudio: () => false,
   playlist: [],
-  setPlaylist: () => { },
+  setPlaylist: () => {},
 })
 
 export const AudioPlayerProvider = ({
