@@ -1,34 +1,37 @@
 'use client'
 
-import { Button } from '@/libs/components/Button'
-import { Input } from '@/libs/components/Input'
-import { AudioPlayerContext } from '@/libs/state/audio-player'
-import { Music } from '@/libs/state/audio-player/music'
-import { DB } from '@/libs/state/db'
-import { AudioContext } from '@/libs/state/db/audio'
-import { AudioProviderContext } from '@/libs/state/db/audio-provider'
-import { formHeaders } from '@/libs/utils/http'
-import { useContext, useEffect, useState } from 'react'
+import { Button } from '$/components/Button'
+import { Input } from '$/components/Input'
+import { DatabaseContext } from '$/database'
+import { addAudio } from '$/database/audio'
+import {
+  AudioProvider,
+  AudioProviders,
+  fetchAudioProviders,
+  findAudioProvider,
+} from '$/database/audio-provider'
+import { OPFSContext } from '$/opfs'
+import { AudioPlayerContext } from '$/state/audio-player'
+import { Music } from '$/state/audio-player/music'
+import { formHeaders } from '$/utils/http'
+import { use, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import AudioCard from './playlist/AudioCard'
 import Search from './libs/components/icons/Search'
 import Spinner from './libs/components/icons/Spinner'
+import AudioCard from './playlist/AudioCard'
 
 export default function Home() {
-  const { addAudio } = useContext(AudioContext)
-  const { setPlaylist } = useContext(AudioPlayerContext)
-  const [providers, setProviders] = useState<
-    Pick<DB['audio_provider'], 'id' | 'name'>[]
-  >([])
-  const { fetchAudioProviders, findAudioProvider } =
-    useContext(AudioProviderContext)
+  const db = use(DatabaseContext)
+  const { dlDir } = use(OPFSContext)
+  const { setPlaylist } = use(AudioPlayerContext)
+  const [providers, setProviders] = useState<AudioProviders>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchResult, setSearchResult] = useState<Music[]>([])
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
-  const [currentProvider, setCurrentProvider] = useState<
-    DB['audio_provider'] | null
-  >(null)
+  const [currentProvider, setCurrentProvider] = useState<AudioProvider | null>(
+    null,
+  )
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   // useEffect(() => {
@@ -40,20 +43,22 @@ export default function Home() {
   // }, [])
 
   useEffect(() => {
-    fetchAudioProviders(100)
-      .then((res) => {
-        setProviders(res)
-      })
+    if (!db) return
+    fetchAudioProviders(db, 100)
+      .then((res) => setProviders(res))
       .catch((e) => {
         if (typeof e === 'object' && e != null && 'message' in e)
           console.warn(e?.message)
         else console.error(e)
       })
-  }, [fetchAudioProviders])
+  }, [db])
 
   const search = async (page: number) => {
-    if (!providerId) return
-    const provider = await findAudioProvider(providerId)
+    if (!providerId || !db) {
+      toast.error('Failed to search')
+      return
+    }
+    const provider = await findAudioProvider(db, providerId)
     if (!provider) return
     setCurrentProvider(provider)
 
@@ -73,10 +78,13 @@ export default function Home() {
   }
 
   const downloadMusic = async (music: Music) => {
-    if (!currentProvider) return
+    if (!currentProvider || !dlDir || !db) {
+      toast.error('Failed to download')
+      return
+    }
     setIsLoading(true)
     try {
-      const newAudio = await addAudio({
+      const newAudio = await addAudio(db, dlDir, {
         id: `${currentProvider.id}+${music.musicId}`,
         title: music.title,
         artist: music.artist,
@@ -123,7 +131,7 @@ export default function Home() {
         }}
       >
         <select
-          className="col-span-12 block w-full appearance-none border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2.5 text-sm text-gray-500 focus:border-gray-200 focus:outline-none focus:ring-0 dark:border-gray-700 dark:text-gray-400 md:col-span-3"
+          className="col-span-12 block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-gray-400 dark:focus:border-blue-500 md:col-span-3"
           onChange={(e) => {
             setProviderId(e.currentTarget.value)
           }}
@@ -159,22 +167,15 @@ export default function Home() {
             key={music.musicId}
             className="border-gray-200 dark:border-gray-700 md:border-t"
             audio={{
-              id: `${currentProvider?.id ?? ''}-{music.musicId}}`,
+              id: `${currentProvider?.id ?? ''}+{music.musicId}}`,
               title:
                 music.title === 'untitled'
                   ? music.filename ?? 'untitled'
                   : music.title,
               artist: music.artist,
-              thumbnail: music.thumbnail ? music.thumbnail : undefined,
               url: music.url,
-              provider: currentProvider
-                ? {
-                    id: currentProvider.id,
-                    name: currentProvider.name,
-                    url: currentProvider.url,
-                    headers: JSON.parse(currentProvider.headers),
-                  }
-                : { id: '', name: '', url: '', headers: [] },
+              thumbnail: music.thumbnail ?? undefined,
+              provider: currentProvider ?? undefined,
             }}
             onClick={() => downloadMusic(music)}
           />

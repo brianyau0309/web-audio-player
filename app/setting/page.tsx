@@ -1,11 +1,19 @@
 'use client'
 
-import { Input } from '../libs/components/Input'
-import { Button } from '../libs/components/Button'
-import { useContext, useEffect, useState } from 'react'
-import Trash from '@/libs/components/icons/Trash'
-import { AudioProviderType, DB } from '@/libs/state/db'
-import { AudioProviderContext } from '@/libs/state/db/audio-provider'
+import { Button } from '$/components/Button'
+import { Input } from '$/components/Input'
+import Trash from '$/components/icons/Trash'
+import { DatabaseContext } from '$/database'
+import {
+  AudioProvider,
+  AudioProviders,
+  AudioProviderType,
+  addAudioProvider,
+  fetchAudioProviders,
+  removeAudioProvider,
+} from '$/database/audio-provider'
+import { use, useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 const AddModal = ({
   show,
@@ -186,24 +194,20 @@ const AddModal = ({
 }
 
 export default function SettingPage() {
+  const db = use(DatabaseContext)
   const [showModal, setShowModal] = useState(false)
-  const [audioProviders, setAudioProviders] = useState<
-    Pick<DB['audio_provider'], 'id' | 'name'>[]
-  >([])
-  const { removeAudioProvider, fetchAudioProviders, addAudioProvider } =
-    useContext(AudioProviderContext)
+  const [audioProviders, setAudioProviders] = useState<AudioProviders>([])
 
   useEffect(() => {
-    fetchAudioProviders(100)
-      .then((result) => {
-        setAudioProviders(result)
-      })
+    if (db == null) return
+    fetchAudioProviders(db, 100)
+      .then((result) => setAudioProviders(result))
       .catch((e) => {
         if (typeof e === 'object' && e != null && 'message' in e)
           console.warn(e?.message)
         else console.error(e)
       })
-  }, [fetchAudioProviders])
+  }, [db])
 
   const onAdd = async (
     name: string,
@@ -211,24 +215,28 @@ export default function SettingPage() {
     headers: string,
     providerType: AudioProviderType,
   ) => {
-    if (fetchAudioProviders && addAudioProvider) {
-      await addAudioProvider({
-        name,
-        url,
-        headers,
-        provider_type: providerType,
-      })
-      const updated = await fetchAudioProviders(100)
-      setAudioProviders(updated)
+    if (!db) {
+      toast.error('Failed to add audio provider')
+      return
     }
+    await addAudioProvider(db, {
+      name,
+      url,
+      headers,
+      provider_type: providerType,
+    })
+    const updated = await fetchAudioProviders(db, 100)
+    setAudioProviders(updated)
   }
 
   const onRemove = async (id: string) => {
-    if (removeAudioProvider && fetchAudioProviders) {
-      await removeAudioProvider(id)
-      const updated = await fetchAudioProviders(100)
-      setAudioProviders(updated)
+    if (!db) {
+      toast.error('Failed to add audio provider')
+      return
     }
+    await removeAudioProvider(db, id)
+    const updated = await fetchAudioProviders(db, 100)
+    setAudioProviders(updated)
   }
 
   return (

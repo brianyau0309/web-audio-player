@@ -1,6 +1,6 @@
+import { DatabaseProvider } from '$/database'
+import { OPFSProvider } from '$/opfs'
 import { AudioPlayerProvider } from './audio-player'
-import { DatabaseProvider } from './db'
-import { OPFSProvider } from './opfs'
 
 const AppStateProvider = ({ children }: { children: React.ReactNode }) => {
   return (

@@ -1,4 +1,4 @@
-import cx from '@/libs/cx'
+import cx from '$/utils/cx'
 
 export const ImageSkeleton = (props: {
   className?: string

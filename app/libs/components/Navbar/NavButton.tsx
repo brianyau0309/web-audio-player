@@ -1,6 +1,6 @@
 'use client'
 
-import cx from '@/libs/cx'
+import cx from '$/utils/cx'
 import { usePathname, useRouter } from 'next/navigation'
 
 type NavButtonProps = {

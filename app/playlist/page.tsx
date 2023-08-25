@@ -1,19 +1,27 @@
 'use client'
 
-import { useContext } from 'react'
-import { AudioContext } from '@/libs/state/db/audio'
-import AudioCard, { Audio } from './AudioCard'
-import { AudioPlayerContext } from '@/libs/state/audio-player'
-import cx from '@/libs/cx'
+import { DatabaseContext } from '$/database'
+import { AudioInfo, fetchAudio, removeAudio } from '$/database/audio'
+import { OPFSContext } from '$/opfs'
+import { AudioPlayerContext } from '$/state/audio-player'
+import cx from '$/utils/cx'
+import { use } from 'react'
+import toast from 'react-hot-toast'
+import AudioCard from './AudioCard'
 
 export default function PlaylistPage() {
-  const { fetchAudio, removeAudio } = useContext(AudioContext)
+  const db = use(DatabaseContext)
+  const { dlDir } = use(OPFSContext)
   const { currentIndex, setCurrentIndex, playlist, setPlaylist } =
-    useContext(AudioPlayerContext)
+    use(AudioPlayerContext)
 
-  const removeMusic = async (audio: Audio) => {
-    await removeAudio(audio.id)
-    const res = await fetchAudio(100)
+  const handleDelete = async (audio: AudioInfo) => {
+    if (!db || !dlDir) {
+      toast.error('Failed to remove audio')
+      return
+    }
+    await removeAudio(db, dlDir, audio.id)
+    const res = await fetchAudio(db, 100)
     setPlaylist(res)
   }
 
@@ -28,7 +36,7 @@ export default function PlaylistPage() {
             })}
             audio={audio}
             onClick={() => setCurrentIndex(index)}
-            onDelete={() => removeMusic(audio)}
+            onDelete={() => handleDelete(audio)}
           />
         ))}
       </ul>

@@ -1,4 +1,4 @@
-import cx from '../cx'
+import cx from "$/utils/cx"
 
 export type InputProps = React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,

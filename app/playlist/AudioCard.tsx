@@ -1,53 +1,49 @@
-import { Button } from '@/libs/components/Button'
-import { ImageSkeleton } from '@/libs/components/ImageSkeleton'
-import Trash from '@/libs/components/icons/Trash'
-import cx from '@/libs/cx'
-import { Provider } from '@/libs/state/opfs'
-import { formHeaders } from '@/libs/utils/http'
+import { Button } from '$/components/Button'
+import { ImageSkeleton } from '$/components/ImageSkeleton'
+import Trash from '$/components/icons/Trash'
+import cx from '$/utils/cx'
+import { AudioInfo } from '$/database/audio'
+import { formHeaders } from '$/utils/http'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { Suspense, use } from 'react'
 
 const defaultImagePath = '/no-image-audio.png'
 
-export type Audio = {
-  id: string
-  title: string
-  artist?: string
-  thumbnail?: string
-  url: string
-  provider: Provider
+export type AudioCardInfo = Omit<AudioInfo, 'provider'> &
+  Partial<Pick<AudioInfo, 'provider'>>
+
+async function loadImage(audio: AudioCardInfo) {
+  if (audio.thumbnail && audio.provider) {
+    const res = await fetch(`${audio.provider.url}${audio.thumbnail}`, {
+      headers: formHeaders(JSON.parse(audio.provider.headers)),
+    })
+    if (res.ok) return URL.createObjectURL(await res.blob())
+  }
+  return defaultImagePath
+}
+
+const AudioCardThumbnail = ({ audio }: { audio: AudioCardInfo }) => {
+  const imgUrl = use(loadImage(audio))
+  return (
+    <Image
+      className="h-20 w-20 rounded-xl bg-white"
+      src={imgUrl}
+      width={80}
+      height={80}
+      alt="audio thumbnail"
+      priority
+    />
+  )
 }
 
 export type AudioCardProps = {
   className?: string
-  audio: Audio
-  provider?: Provider
+  audio: AudioCardInfo
   onClick?: () => void
   onDelete?: () => void
 }
 
 const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [imgUrl, setImgUrl] = useState('')
-
-  useEffect(() => {
-    async function loadImage() {
-      if (audio.thumbnail) {
-        const res = await fetch(`${audio.provider.url}${audio.thumbnail}`, {
-          headers: formHeaders(audio.provider.headers),
-        })
-        if (res.ok) {
-          setImgUrl(URL.createObjectURL(await res.blob()))
-        } else setImgUrl(defaultImagePath)
-      } else setImgUrl(defaultImagePath)
-    }
-    try {
-      loadImage()
-    } finally {
-      setIsLoading(false)
-    }
-  }, [audio])
-
   return (
     <li
       className={cx(
@@ -60,18 +56,9 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
     >
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
-          {isLoading || !imgUrl ? (
-            <ImageSkeleton className="h-20 w-20" />
-          ) : (
-            <Image
-              className="h-20 w-20 rounded-xl bg-white"
-              src={imgUrl}
-              width={80}
-              height={80}
-              alt="audio thumbnail"
-              priority
-            />
-          )}
+          <Suspense fallback={<ImageSkeleton className="h-20 w-20" />}>
+            <AudioCardThumbnail audio={audio} />
+          </Suspense>
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-white">

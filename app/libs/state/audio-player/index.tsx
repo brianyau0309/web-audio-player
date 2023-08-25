@@ -1,26 +1,18 @@
 'use client'
 
-import {
-  ElementRef,
-  RefObject,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import { OPFSContext } from '../opfs'
-import { AudioContext } from '../db/audio'
-import { Audio } from '@/playlist/AudioCard'
+import { DatabaseContext } from '$/database'
+import { AudioInfo, fetchAudio } from '$/database/audio'
+import { OPFSContext } from '$/opfs'
+import { createContext, use, useEffect, useRef, useState } from 'react'
 
 export type AudioPlayerState = {
-  ref?: RefObject<HTMLAudioElement>
+  ref?: React.RefObject<HTMLAudioElement>
   src: string
   currentIndex: number
   setCurrentIndex: (index: number) => void
   nextAudio: () => boolean
-  playlist: Audio[]
-  setPlaylist: React.Dispatch<React.SetStateAction<Audio[]>>
+  playlist: AudioInfo[]
+  setPlaylist: React.Dispatch<React.SetStateAction<AudioInfo[]>>
 }
 
 export const AudioPlayerContext = createContext<AudioPlayerState>({
@@ -37,41 +29,39 @@ export const AudioPlayerProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const { dlDir } = useContext(OPFSContext)
-  const { fetchAudio } = useContext(AudioContext)
-  const [playlist, setPlaylist] = useState<Audio[]>([])
+  const db = use(DatabaseContext)
+  const { dlDir } = use(OPFSContext)
+  const [playlist, setPlaylist] = useState<AudioInfo[]>([])
   const [currentIndex, setCurrentIndex] = useState<number>(-1)
-  const [currentAudio, setCurrentAudio] = useState<Audio | null>(null)
-  const ref = useRef<ElementRef<'audio'>>(null)
+  const [currentAudio, setCurrentAudio] = useState<AudioInfo | null>(null)
+  const ref = useRef<React.ElementRef<'audio'>>(null)
   const [src, setSrc] = useState<string>('')
 
   // Initialize Playlist
   useEffect(() => {
-    fetchAudio(100)
-      .then((res) => {
-        setPlaylist(res)
-      })
+    if (!db) return
+    fetchAudio(db, 100)
+      .then((res) => setPlaylist(res))
       .catch((e) => {
         if (typeof e === 'object' && e != null && 'message' in e)
           console.warn(e?.message)
         else console.error(e)
       })
-  }, [fetchAudio, setPlaylist])
+  }, [db, setPlaylist])
 
   // Load Audio
   useEffect(() => {
     const update = async () => {
-      if (dlDir && currentAudio) {
-        try {
-          const file = await dlDir?.getFileHandle(`${currentAudio.id}`)
-          const url = URL.createObjectURL(await file.getFile())
-          setSrc((prev) => {
-            if (prev) URL.revokeObjectURL(prev)
-            return url
-          })
-        } catch (e) {
-          console.error(`Failed to get file handle for ${currentAudio.id}.`)
-        }
+      if (!dlDir || !currentAudio) return
+      try {
+        const file = await dlDir.getFileHandle(`${currentAudio.id}`)
+        const url = URL.createObjectURL(await file.getFile())
+        setSrc((prev) => {
+          if (prev) URL.revokeObjectURL(prev)
+          return url
+        })
+      } catch (e) {
+        console.error(`Failed to get file handle for ${currentAudio.id}.`)
       }
     }
     update()

@@ -1,10 +1,10 @@
+import AppStateProvider from '$/state'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import './globals.css'
 import { AudioPlayer } from './libs/components/AudioPlayer'
 import { Navbar } from './libs/components/Navbar/Navbar'
-import AppStateProvider from './libs/state'
 
 const inter = Inter({ subsets: ['latin'] })
 

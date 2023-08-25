@@ -1,22 +1,22 @@
 'use client'
 
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { OPFSContext } from '$/opfs'
+import { use, useCallback, useEffect, useState } from 'react'
 import AudioCard from '../playlist/AudioCard'
-import { OPFSContext } from '@/libs/state/opfs'
+import toast from 'react-hot-toast'
 
 export default function DownloadPage() {
-  const { dlDir } = useContext(OPFSContext)
+  const { dlDir } = use(OPFSContext)
   const [downloadList, setDownloadList] = useState<FileSystemFileHandle[]>([])
 
   const loadDownloadedFile = useCallback(async () => {
-    if (dlDir) {
-      const files = []
-      for await (const file of dlDir?.values()) {
-        if (file.kind === 'directory') continue
-        files.push(file)
-      }
-      setDownloadList(files)
+    if (!dlDir) return
+    const files = []
+    for await (const file of dlDir.values()) {
+      if (file.kind === 'directory') continue
+      files.push(file)
     }
+    setDownloadList(files)
   }, [dlDir])
 
   useEffect(() => {
@@ -24,7 +24,11 @@ export default function DownloadPage() {
   }, [dlDir, loadDownloadedFile])
 
   const removeFile = async (file: FileSystemFileHandle) => {
-    await dlDir?.removeEntry(file.name)
+    if (!dlDir) {
+      toast.error('Failed to remove audio')
+      return
+    }
+    await dlDir.removeEntry(file.name)
     loadDownloadedFile()
   }
 
@@ -35,12 +39,7 @@ export default function DownloadPage() {
           <AudioCard
             className="border-gray-200 dark:border-gray-700 md:border-t"
             key={file.name}
-            audio={{
-              id: file.name,
-              title: file.name,
-              url: '',
-              provider: { id: '', name: '', url: '', headers: [] },
-            }}
+            audio={{ id: file.name, title: file.name, url: '' }}
             onDelete={() => removeFile(file)}
           />
         ))}
