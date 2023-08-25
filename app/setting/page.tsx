@@ -241,7 +241,7 @@ export default function SettingPage() {
 
   return (
     <>
-      <div className="mt-5 flex flex-row-reverse">
+      <div className="flex flex-row-reverse">
         <Button variant="primary" onClick={() => setShowModal(true)}>
           New Provider
         </Button>

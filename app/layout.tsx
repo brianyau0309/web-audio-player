@@ -25,7 +25,7 @@ export default function RootLayout({
         <AppStateProvider>
           <Navbar />
 
-          <main className="container mx-auto h-screen md:px-4">
+          <main className="container mx-auto h-[calc(100vh-2.5rem)] py-4 md:px-4">
             {children}
             <div className="mt-10" />
           </main>

@@ -29,9 +29,7 @@ export default function Home() {
   const [searchResult, setSearchResult] = useState<Music[]>([])
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
-  const [currentProvider, setCurrentProvider] = useState<AudioProvider | null>(
-    null,
-  )
+  const [curProvider, setCurProvider] = useState<AudioProvider | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   // useEffect(() => {
@@ -60,11 +58,12 @@ export default function Home() {
     }
     const provider = await findAudioProvider(db, providerId)
     if (!provider) return
-    setCurrentProvider(provider)
+    setCurProvider(provider)
 
+    const PAGE_SIZE = 10
     const qs = new URLSearchParams({
-      limit: String(10),
-      skip: String(Math.max(page - 1, 0) * 10),
+      limit: String(PAGE_SIZE),
+      skip: String(Math.max(page - 1, 0) * PAGE_SIZE),
       ...(searchQuery ? { search: searchQuery } : undefined),
     })
     const res = await fetch(`${provider.url}?${qs.toString()}`, {
@@ -78,23 +77,23 @@ export default function Home() {
   }
 
   const downloadMusic = async (music: Music) => {
-    if (!currentProvider || !dlDir || !db) {
+    if (!curProvider || !dlDir || !db) {
       toast.error('Failed to download')
       return
     }
     setIsLoading(true)
     try {
       const newAudio = await addAudio(db, dlDir, {
-        id: `${currentProvider.id}+${music.musicId}`,
+        id: `${curProvider.id}+${music.musicId}`,
         title: music.title,
         artist: music.artist,
         thumbnail: music.thumbnail,
         url: music.url,
         provider: {
-          id: currentProvider.id,
-          name: currentProvider.name,
-          url: currentProvider.url,
-          headers: JSON.parse(currentProvider.headers),
+          id: curProvider.id,
+          name: curProvider.name,
+          url: curProvider.url,
+          headers: JSON.parse(curProvider.headers),
         },
       })
       setPlaylist((prev) => [...prev, newAudio])
@@ -119,7 +118,7 @@ export default function Home() {
       )}
 
       <form
-        className="mt-5 grid grid-cols-12 gap-3 px-2 md:p-0"
+        className="grid grid-cols-12 gap-3 px-2 md:p-0"
         onSubmit={(e) => {
           e.preventDefault()
           setPage(1)
@@ -167,7 +166,7 @@ export default function Home() {
             key={music.musicId}
             className="border-gray-200 dark:border-gray-700 md:border-t"
             audio={{
-              id: `${currentProvider?.id ?? ''}+{music.musicId}}`,
+              id: `${curProvider?.id ?? ''}+{music.musicId}}`,
               title:
                 music.title === 'untitled'
                   ? music.filename ?? 'untitled'
@@ -175,44 +174,32 @@ export default function Home() {
               artist: music.artist,
               url: music.url,
               thumbnail: music.thumbnail ?? undefined,
-              provider: currentProvider ?? undefined,
+              provider: curProvider ?? undefined,
             }}
             onClick={() => downloadMusic(music)}
           />
         ))}
       </ul>
 
-      <div className="mt-4 flex w-full justify-between">
-        <Button
-          variant="primary"
-          onClick={() => {
-            const newPage = Math.max(page - 1, 1)
-            setPage(newPage)
-            search(newPage).then((res) => {
-              if (res?.data) {
-                setSearchResult(res.data)
-              }
-            })
-          }}
-        >
-          Prev
-        </Button>
-
-        <Button
-          variant="primary"
-          onClick={() => {
-            const newPage = page + 1
-            setPage(newPage)
-            search(newPage).then((res) => {
-              if (res?.data) {
-                setSearchResult(res.data)
-              }
-            })
-          }}
-        >
-          Next
-        </Button>
-      </div>
+      {searchResult.length > 0 && (
+        <div className="mx-auto flex w-11/12 py-8 pt-2 md:w-1/2">
+          <Button
+            variant="primary"
+            className="mx-auto w-full"
+            onClick={() => {
+              const newPage = page + 1
+              setPage(newPage)
+              search(newPage).then((res) => {
+                if (res?.data) {
+                  setSearchResult((prev) => [...prev, ...res.data])
+                }
+              })
+            }}
+          >
+            Load More
+          </Button>
+        </div>
+      )}
     </>
   )
 }

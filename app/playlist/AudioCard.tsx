@@ -5,36 +5,18 @@ import cx from '$/utils/cx'
 import { AudioInfo } from '$/database/audio'
 import { formHeaders } from '$/utils/http'
 import Image from 'next/image'
-import { Suspense, use } from 'react'
+import { useEffect, useState } from 'react'
 
-const defaultImagePath = '/no-image-audio.png'
+async function loadImage(url: string, headers: string) {
+  const res = await fetch(url, {
+    headers: formHeaders(JSON.parse(headers)),
+  })
+  if (res.ok) return URL.createObjectURL(await res.blob())
+  return '/no-image-audio.png'
+}
 
 export type AudioCardInfo = Omit<AudioInfo, 'provider'> &
   Partial<Pick<AudioInfo, 'provider'>>
-
-async function loadImage(audio: AudioCardInfo) {
-  if (audio.thumbnail && audio.provider) {
-    const res = await fetch(`${audio.provider.url}${audio.thumbnail}`, {
-      headers: formHeaders(JSON.parse(audio.provider.headers)),
-    })
-    if (res.ok) return URL.createObjectURL(await res.blob())
-  }
-  return defaultImagePath
-}
-
-const AudioCardThumbnail = ({ audio }: { audio: AudioCardInfo }) => {
-  const imgUrl = use(loadImage(audio))
-  return (
-    <Image
-      className="h-20 w-20 rounded-xl bg-white"
-      src={imgUrl}
-      width={80}
-      height={80}
-      alt="audio thumbnail"
-      priority
-    />
-  )
-}
 
 export type AudioCardProps = {
   className?: string
@@ -44,10 +26,22 @@ export type AudioCardProps = {
 }
 
 const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+  const [url, setUrl] = useState<string>()
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!audio.thumbnail || !audio.provider?.url || !audio.provider?.headers)
+      return
+    setIsLoading(true)
+    loadImage(`${audio.provider.url}${audio.thumbnail}`, audio.provider.headers)
+      .then((url) => setUrl(url))
+      .finally(() => setIsLoading(false))
+  }, [audio.thumbnail, audio.provider?.url, audio.provider?.headers])
+
   return (
     <li
       className={cx(
-        'px-2 py-3 sm:py-4',
+        'px-2 py-3 sm:py-5',
         onClick != null ? 'cursor-pointer hover:bg-slate-900' : '',
         className,
       )}
@@ -56,9 +50,18 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
     >
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
-          <Suspense fallback={<ImageSkeleton className="h-20 w-20" />}>
-            <AudioCardThumbnail audio={audio} />
-          </Suspense>
+          {isLoading || !url ? (
+            <ImageSkeleton className="h-20 w-20" />
+          ) : (
+            <Image
+              className="h-20 w-20 rounded-xl bg-white"
+              src={url}
+              width={80}
+              height={80}
+              alt="audio thumbnail"
+              priority
+            />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
