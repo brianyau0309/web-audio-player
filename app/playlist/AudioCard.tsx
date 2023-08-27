@@ -98,10 +98,10 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
       <div className="flex items-center space-x-4">
         <div className="flex-shrink-0">
           {isLoading || !url ? (
-            <ImageSkeleton className="h-20 w-20" />
+            <ImageSkeleton className="h-20 w-20 md:h-24 md:w-24" />
           ) : (
             <Image
-              className="h-20 w-20 rounded-xl bg-white"
+              className="h-20 w-20 rounded-xl bg-white md:h-24 md:w-24"
               src={url}
               width={80}
               height={80}

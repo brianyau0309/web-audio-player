@@ -32,14 +32,6 @@ export default function Home() {
   const [curProvider, setCurProvider] = useState<AudioProvider | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  // useEffect(() => {
-  //   if ('serviceWorker' in navigator) {
-  //     navigator.serviceWorker
-  //       .register('./worker.js')
-  //       .then((registration) => console.log('scope is: ', registration.scope))
-  //   }
-  // }, [])
-
   useEffect(() => {
     if (!db) return
     fetchAudioProviders(db, 100)
@@ -119,7 +111,7 @@ export default function Home() {
       )}
 
       <form
-        className="grid grid-cols-12 gap-3 px-2 md:p-0"
+        className="sticky top-10 grid grid-cols-12 gap-3 bg-black px-2 pt-4 md:px-0"
         onSubmit={(e) => {
           e.preventDefault()
           setPage(1)
@@ -161,7 +153,7 @@ export default function Home() {
         </Button>
       </form>
 
-      <ul className="pt-4 md:grid md:grid-cols-2 md:gap-2">
+      <ul className="overflow-y-auto pt-4 md:grid md:grid-cols-2 md:gap-2">
         {searchResult.map((music) => (
           <AudioCard
             key={music.musicId}

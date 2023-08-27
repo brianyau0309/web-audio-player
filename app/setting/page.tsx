@@ -5,7 +5,6 @@ import { Input } from '$/components/Input'
 import Trash from '$/components/icons/Trash'
 import { DatabaseContext } from '$/database'
 import {
-  AudioProvider,
   AudioProviders,
   AudioProviderType,
   addAudioProvider,
@@ -241,7 +240,7 @@ export default function SettingPage() {
 
   return (
     <>
-      <div className="flex flex-row-reverse">
+      <div className="flex flex-row-reverse px-2 pt-4 md:px-0">
         <Button variant="primary" onClick={() => setShowModal(true)}>
           New Provider
         </Button>
