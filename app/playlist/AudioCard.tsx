@@ -5,14 +5,38 @@ import cx from '$/utils/cx'
 import { AudioInfo } from '$/database/audio'
 import { formHeaders } from '$/utils/http'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+import { OPFSContext } from '$/opfs'
+import { parseBlob } from 'music-metadata-browser'
 
-async function loadImage(url: string, headers: string) {
+const defaultThumbnail = '/no-image-audio.png'
+
+async function loadImageFromFile(
+  dir: FileSystemDirectoryHandle,
+  fileName: string,
+) {
+  try {
+    const fileHandle = await dir.getFileHandle(fileName)
+    const metaData = await parseBlob(await fileHandle.getFile())
+    const firstPic = metaData.common.picture?.[0]
+    if (firstPic) {
+      return `data:${
+        firstPic.format
+      };charset=utf-8;base64,${firstPic.data.toString('base64')}`
+    }
+    return defaultThumbnail
+  } catch (e) {
+    console.error(e)
+    return defaultThumbnail
+  }
+}
+
+async function loadImageFromUrl(url: string, headers: string) {
   const res = await fetch(url, {
     headers: formHeaders(JSON.parse(headers)),
   })
   if (res.ok) return URL.createObjectURL(await res.blob())
-  return '/no-image-audio.png'
+  return defaultThumbnail
 }
 
 export type AudioCardInfo = Omit<AudioInfo, 'provider'> &
@@ -26,17 +50,40 @@ export type AudioCardProps = {
 }
 
 const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+  const { dlDir } = use(OPFSContext)
   const [url, setUrl] = useState<string>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!audio.thumbnail || !audio.provider?.url || !audio.provider?.headers)
-      return
-    setIsLoading(true)
-    loadImage(`${audio.provider.url}${audio.thumbnail}`, audio.provider.headers)
-      .then((url) => setUrl(url))
-      .finally(() => setIsLoading(false))
-  }, [audio.thumbnail, audio.provider?.url, audio.provider?.headers])
+    if (audio.downloaded && dlDir) {
+      setIsLoading(true)
+      loadImageFromFile(dlDir, audio.id)
+        .then((url) => setUrl(url))
+        .catch(() => setUrl(defaultThumbnail))
+        .finally(() => setIsLoading(false))
+    } else if (
+      !audio.thumbnail ||
+      !audio.provider?.url ||
+      !audio.provider?.headers
+    ) {
+      return setUrl(defaultThumbnail)
+    } else {
+      setIsLoading(true)
+      loadImageFromUrl(
+        `${audio.provider.url}${audio.thumbnail}`,
+        audio.provider.headers,
+      )
+        .then((url) => setUrl(url))
+        .finally(() => setIsLoading(false))
+    }
+  }, [
+    dlDir,
+    audio.id,
+    audio.downloaded,
+    audio.thumbnail,
+    audio.provider?.url,
+    audio.provider?.headers,
+  ])
 
   return (
     <li

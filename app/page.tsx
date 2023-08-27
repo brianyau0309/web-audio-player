@@ -23,7 +23,7 @@ import AudioCard from './playlist/AudioCard'
 export default function Home() {
   const db = use(DatabaseContext)
   const { dlDir } = use(OPFSContext)
-  const { setPlaylist } = use(AudioPlayerContext)
+  const { playlistDispatch } = use(AudioPlayerContext)
   const [providers, setProviders] = useState<AudioProviders>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchResult, setSearchResult] = useState<Music[]>([])
@@ -89,14 +89,15 @@ export default function Home() {
         artist: music.artist,
         thumbnail: music.thumbnail,
         url: music.url,
+        downloaded: true,
         provider: {
           id: curProvider.id,
           name: curProvider.name,
           url: curProvider.url,
-          headers: JSON.parse(curProvider.headers),
+          headers: curProvider.headers,
         },
       })
-      setPlaylist((prev) => [...prev, newAudio])
+      playlistDispatch({ type: 'addAudio', payload: [newAudio] })
       toast.success('Download success')
     } catch (e) {
       console.error(e)
@@ -174,6 +175,7 @@ export default function Home() {
               artist: music.artist,
               url: music.url,
               thumbnail: music.thumbnail ?? undefined,
+              downloaded: false,
               provider: curProvider ?? undefined,
             }}
             onClick={() => downloadMusic(music)}

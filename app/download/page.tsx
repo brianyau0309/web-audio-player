@@ -39,7 +39,12 @@ export default function DownloadPage() {
           <AudioCard
             className="border-gray-200 dark:border-gray-700 md:border-t"
             key={file.name}
-            audio={{ id: file.name, title: file.name, url: '' }}
+            audio={{
+              id: file.name,
+              title: file.name,
+              downloaded: true,
+              url: '',
+            }}
             onDelete={() => removeFile(file)}
           />
         ))}

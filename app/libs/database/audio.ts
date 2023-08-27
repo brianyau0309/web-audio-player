@@ -22,6 +22,7 @@ export type AudioInfo = {
   artist?: string
   thumbnail?: string
   url: string
+  downloaded: boolean
   provider: Pick<AudioProvider, 'id' | 'name' | 'url' | 'headers'>
 }
 
@@ -51,6 +52,7 @@ export async function fetchAudio(
     artist: audio.artist,
     thumbnail: audio.thumbnail,
     url: audio.url,
+    downloaded: audio.downloaded,
     provider: {
       id: audio.provider_id,
       name: audio.provider_name,
@@ -82,6 +84,7 @@ export async function findAudio(db: Database, id: AudioInfo['id']) {
     artist: audio.artist,
     thumbnail: audio.thumbnail,
     url: audio.url,
+    downloaded: audio.downloaded,
     provider: {
       id: audio.provider_id,
       name: audio.provider_name,
