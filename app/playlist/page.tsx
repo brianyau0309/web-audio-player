@@ -33,7 +33,7 @@ export default function PlaylistPage() {
 
   return (
     <>
-      <div className="flex flex-row pt-4 px-2 md:px-0">
+      <div className="sticky top-0 flex flex-row px-2 pt-4 md:px-0">
         <Input
           className="flex-grow"
           placeholder="Search"

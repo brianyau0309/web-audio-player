@@ -111,7 +111,7 @@ export default function Home() {
       )}
 
       <form
-        className="sticky top-10 grid grid-cols-12 gap-3 bg-black px-2 pt-4 md:px-0"
+        className="sticky top-0 grid grid-cols-12 gap-3 bg-black px-2 pt-4 md:px-0"
         onSubmit={(e) => {
           e.preventDefault()
           setPage(1)
