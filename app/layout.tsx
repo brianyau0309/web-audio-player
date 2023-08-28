@@ -22,7 +22,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            style: {
+              background: '#1E293B',
+              filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))'
+            },
+            success: {
+              style: {
+                color: '#22C55E',
+              },
+            },
+            error: {
+              style: {
+                color: '#DC2626',
+              },
+            },
+          }}
+        />
         <ServiceWorker />
         <AppStateProvider>
           <div className="flex flex-col overflow-hidden">

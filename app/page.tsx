@@ -36,11 +36,7 @@ export default function Home() {
     if (!db) return
     fetchAudioProviders(db, 100)
       .then((res) => setProviders(res))
-      .catch((e) => {
-        if (typeof e === 'object' && e != null && 'message' in e)
-          console.warn(e?.message)
-        else console.error(e)
-      })
+      .catch((e) => console.warn(e?.message))
   }, [db])
 
   const search = async (page: number) => {
@@ -58,14 +54,18 @@ export default function Home() {
       skip: String(Math.max(page - 1, 0) * PAGE_SIZE),
       ...(searchQuery ? { search: searchQuery } : undefined),
     })
-    const res = await fetch(`${provider.url}?${qs.toString()}`, {
-      headers: formHeaders(JSON.parse(provider.headers)),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      return data
+    try {
+      const res = await fetch(`${provider.url}?${qs.toString()}`, {
+        headers: formHeaders(JSON.parse(provider.headers)),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        return data
+      }
+      console.error(res.status, await res.json())
+    } catch (e) {
+      toast.error('Something wrong, please retry later.')
     }
-    console.error(res.status, await res.json())
   }
 
   const downloadMusic = async (music: Music) => {
