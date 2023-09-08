@@ -12,12 +12,18 @@ export class OPFSNotInitializedError extends OPFSError {
 
 export type OPFSState = {
   dlDir: FileSystemDirectoryHandle | null
+  thumbnailDir: FileSystemDirectoryHandle | null
 }
 
-export const OPFSContext = createContext<OPFSState>({ dlDir: null })
+export const OPFSContext = createContext<OPFSState>({
+  dlDir: null,
+  thumbnailDir: null,
+})
 
 export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
   const [dlDir, setDlDir] = useState<FileSystemDirectoryHandle | null>(null)
+  const [thumbnailDir, setThumbnailDir] =
+    useState<FileSystemDirectoryHandle | null>(null)
 
   useEffect(() => {
     initOPFS()
@@ -29,9 +35,15 @@ export const OPFSProvider = ({ children }: { children: React.ReactNode }) => {
       create: true,
     })
     setDlDir(dlHandle)
+    const thumbnailHandle = await rootHandle.getDirectoryHandle('thumbnail', {
+      create: true,
+    })
+    setThumbnailDir(thumbnailHandle)
   }
 
   return (
-    <OPFSContext.Provider value={{ dlDir }}>{children}</OPFSContext.Provider>
+    <OPFSContext.Provider value={{ dlDir, thumbnailDir }}>
+      {children}
+    </OPFSContext.Provider>
   )
 }

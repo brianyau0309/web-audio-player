@@ -12,19 +12,41 @@ import { parseBlob } from 'music-metadata-browser'
 const defaultThumbnail = '/no-image-audio.png'
 
 async function loadImageFromFile(
-  dir: FileSystemDirectoryHandle,
+  audioDir: FileSystemDirectoryHandle,
   fileName: string,
+  thumailDir?: FileSystemDirectoryHandle,
 ) {
+  if (thumailDir) {
+    try {
+      const fileHandle = await thumailDir.getFileHandle(fileName)
+      const file = await fileHandle.getFile()
+      return URL.createObjectURL(file)
+    } catch {
+      // ignore error and try to load from audio file
+    }
+  }
+
   try {
-    const fileHandle = await dir.getFileHandle(fileName)
+    const fileHandle = await audioDir.getFileHandle(fileName)
     const metaData = await parseBlob(await fileHandle.getFile())
     const firstPic = metaData.common.picture?.[0]
-    if (firstPic) {
-      return `data:${
-        firstPic.format
-      };charset=utf-8;base64,${firstPic.data.toString('base64')}`
+    if (!firstPic) return defaultThumbnail
+    if (thumailDir) {
+      const fileHandle = await thumailDir.getFileHandle(fileName, {
+        create: true,
+      })
+      let imgFile
+      try {
+        imgFile = await fileHandle.createWritable()
+        imgFile.truncate(0)
+        await imgFile.write(firstPic.data)
+      } finally {
+        await imgFile?.close()
+      }
     }
-    return defaultThumbnail
+    return `data:${
+      firstPic.format
+    };charset=utf-8;base64,${firstPic.data.toString('base64')}`
   } catch (e) {
     console.error(e)
     return defaultThumbnail
@@ -50,14 +72,14 @@ export type AudioCardProps = {
 }
 
 const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
-  const { dlDir } = use(OPFSContext)
+  const { dlDir, thumbnailDir } = use(OPFSContext)
   const [url, setUrl] = useState<string>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   useEffect(() => {
-    if (audio.downloaded && dlDir) {
+    if (audio.downloaded && dlDir && thumbnailDir) {
       setIsLoading(true)
-      loadImageFromFile(dlDir, audio.id)
+      loadImageFromFile(dlDir, audio.id, thumbnailDir)
         .then((url) => setUrl(url))
         .catch(() => setUrl(defaultThumbnail))
         .finally(() => setIsLoading(false))
@@ -78,6 +100,7 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
     }
   }, [
     dlDir,
+    thumbnailDir,
     audio.id,
     audio.downloaded,
     audio.thumbnail,
@@ -106,7 +129,8 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
               width={80}
               height={80}
               alt="audio thumbnail"
-              priority
+              placeholder="blur"
+              blurDataURL={defaultThumbnail}
             />
           )}
         </div>

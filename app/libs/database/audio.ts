@@ -121,12 +121,13 @@ export async function addAudio(
 
     // Start write to file
     const file = await dir.getFileHandle(`${audio.id}`, { create: true })
-    const writable = await file.createWritable()
+    let writable
     try {
+      writable = await file.createWritable()
       await writable.truncate(0)
       await writable.write(await res.blob())
     } finally {
-      await writable.close()
+      await writable?.close()
     }
 
     return audio

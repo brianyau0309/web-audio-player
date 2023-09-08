@@ -26,18 +26,11 @@ export default function RootLayout({
           toastOptions={{
             style: {
               background: '#1E293B',
-              filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))'
+              filter:
+                'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))',
             },
-            success: {
-              style: {
-                color: '#22C55E',
-              },
-            },
-            error: {
-              style: {
-                color: '#DC2626',
-              },
-            },
+            success: { style: { color: '#22C55E' } },
+            error: { style: { color: '#DC2626' } },
           }}
         />
         <ServiceWorker />
@@ -47,7 +40,6 @@ export default function RootLayout({
 
             <main className="container mx-auto h-[calc(100vh-2.5rem)] overflow-y-auto bg-black md:px-4">
               {children}
-              <div className="mt-10" />
             </main>
 
             <AudioPlayer />

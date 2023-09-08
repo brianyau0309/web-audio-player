@@ -5,9 +5,7 @@ import { useEffect } from 'react'
 export function ServiceWorker() {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('./worker.js')
-        .then((registration) => console.log('scope is: ', registration.scope))
+      navigator.serviceWorker.register('./worker.js')
     }
   }, [])
 
