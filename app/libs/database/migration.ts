@@ -51,7 +51,7 @@ export const migrations: {
   provider_id TEXT NOT NULL,
   artist TEXT,
   thumbnail TEXT,
-  FOREIGN KEY (provider_id) REFERENCES audio_provider (id)
+  CONSTRAINT audio_provider_id FOREIGN KEY (provider_id) REFERENCES audio_provider (id)
 );`
     },
   },
@@ -69,8 +69,8 @@ CREATE TABLE playlist_audio (
   playlist_id TEXT NOT NULL,
   audio_id TEXT NOT NULL,
   PRIMARY KEY (playlist_id, audio_id),
-  FOREIGN KEY (playlist_id) REFERENCES playlist (id),
-  FOREIGN KEY (audio_id) REFERENCES audio (id)
+  CONSTRAINT playlist_audio_playlist_id FOREIGN KEY (playlist_id) REFERENCES playlist (id) ON DELETE CASCADE,
+  CONSTRAINT playlist_audio_audio_id FOREIGN KEY (audio_id) REFERENCES audio (id) ON DELETE CASCADE
 );`
     },
   },

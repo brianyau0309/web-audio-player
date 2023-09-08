@@ -1,9 +1,10 @@
 'use client'
 
+import AudioCard from '$/components/AudioCard'
 import { Button } from '$/components/Button'
 import { Input } from '$/components/Input'
 import { DatabaseContext } from '$/database'
-import { addAudio } from '$/database/audio'
+import { AudioInfo, addAudio } from '$/database/audio'
 import {
   AudioProvider,
   AudioProviders,
@@ -11,22 +12,18 @@ import {
   findAudioProvider,
 } from '$/database/audio-provider'
 import { OPFSContext } from '$/opfs'
-import { AudioPlayerContext } from '$/state/audio-player'
-import { Music } from '$/state/audio-player/music'
 import { formHeaders } from '$/utils/http'
 import { use, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import Search from './libs/components/icons/Search'
 import Spinner from './libs/components/icons/Spinner'
-import AudioCard from '$/components/AudioCard'
 
 export default function Home() {
   const db = use(DatabaseContext)
   const { dlDir } = use(OPFSContext)
-  const { playlistDispatch } = use(AudioPlayerContext)
   const [providers, setProviders] = useState<AudioProviders>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [searchResult, setSearchResult] = useState<Music[]>([])
+  const [searchResult, setSearchResult] = useState<AudioInfo[]>([])
   const [page, setPage] = useState<number>(1)
   const [providerId, setProviderId] = useState<string>()
   const [curProvider, setCurProvider] = useState<AudioProvider | null>(null)
@@ -68,19 +65,19 @@ export default function Home() {
     }
   }
 
-  const downloadMusic = async (music: Music) => {
+  const downloadMusic = async (audio: AudioInfo) => {
     if (!curProvider || !dlDir || !db) {
       toast.error('Failed to download')
       return
     }
     setIsLoading(true)
     try {
-      const newAudio = await addAudio(db, dlDir, {
-        id: `${curProvider.id}+${music.musicId}`,
-        title: music.title,
-        artist: music.artist,
-        thumbnail: music.thumbnail,
-        url: music.url,
+      await addAudio(db, dlDir, {
+        id: `${curProvider.id}+${audio.id}`,
+        title: audio.title,
+        artist: audio.artist,
+        thumbnail: audio.thumbnail,
+        url: audio.url,
         downloaded: true,
         provider: {
           id: curProvider.id,
@@ -89,7 +86,6 @@ export default function Home() {
           headers: curProvider.headers,
         },
       })
-      playlistDispatch({ type: 'addAudio', payload: [newAudio] })
       toast.success('Download success')
     } catch (e) {
       console.error(e)
@@ -154,23 +150,20 @@ export default function Home() {
       </form>
 
       <ul className="overflow-y-auto pt-4 md:grid md:grid-cols-2 md:gap-2">
-        {searchResult.map((music) => (
+        {searchResult.map((audio) => (
           <AudioCard
-            key={music.musicId}
+            key={audio.id}
             className="border-gray-200 dark:border-gray-700 md:border-t"
             audio={{
-              id: `${curProvider?.id ?? ''}+{music.musicId}}`,
-              title:
-                music.title === 'untitled'
-                  ? music.filename ?? 'untitled'
-                  : music.title,
-              artist: music.artist,
-              url: music.url,
-              thumbnail: music.thumbnail ?? undefined,
+              id: `${curProvider?.id ?? ''}+${audio.id}}`,
+              title: audio.title,
+              artist: audio.artist,
+              url: audio.url,
+              thumbnail: audio.thumbnail ?? undefined,
               downloaded: false,
               provider: curProvider ?? undefined,
             }}
-            onClick={() => downloadMusic(music)}
+            onClick={() => downloadMusic(audio)}
           />
         ))}
       </ul>

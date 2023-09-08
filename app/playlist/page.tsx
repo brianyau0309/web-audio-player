@@ -54,7 +54,10 @@ export default function PlaylistPage() {
         onSubmit={() => {
           if (!newPlaylist || !db) return
           setShow(false)
-          createPlaylist(db, newPlaylist)
+          createPlaylist(db, newPlaylist).then(() => {
+            toast.success('Playlist is created')
+            fetchPlaylists(db).then((res) => setPlaylists(res))
+          })
         }}
       >
         <div className="flex flex-col">

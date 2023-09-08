@@ -93,18 +93,6 @@ export const AudioPlayerProvider = ({
   const ref = useRef<React.ElementRef<'audio'>>(null)
   const [state, dispatch] = useReducer(reducer, initialPlaylistState)
 
-  // Initialize Playlist
-  // useEffect(() => {
-  //   if (!db) return
-  //   fetchAudio(db, 100)
-  //     .then((res) => dispatch({ type: 'setPlaylist', payload: res }))
-  //     .catch((e) => {
-  //       if (typeof e === 'object' && e != null && 'message' in e)
-  //         console.warn(e?.message)
-  //       else console.error(e)
-  //     })
-  // }, [db, dispatch])
-
   const nextAudio = async (index?: number) => {
     if (!dlDir) return false
 

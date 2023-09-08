@@ -37,7 +37,13 @@ export default function PlaylistPage() {
       playlistDispatch({ type: 'addAudio', payload: [audio] })
       toast.success('Added to playlist')
     } catch (e) {
-      toast.error(String(e))
+      if (e instanceof Error) {
+        if (e.message.match(/UNIQUE constraint failed/))
+          toast.error('This audio is already in the playlist')
+      } else {
+        console.error(e)
+        toast.error(String(e))
+      }
     }
   }
 
@@ -48,6 +54,7 @@ export default function PlaylistPage() {
     }
     await removeAudio(db, dlDir, audioList[index].id)
     playlistDispatch({ type: 'removeAudioById', payload: audioList[index].id })
+    setAudioList((al) => al.filter((_, i) => i !== index))
     toast.success('Audio is removed')
   }
 
