@@ -14,12 +14,11 @@ import { OPFSContext } from '$/opfs'
 import { AudioPlayerContext } from '$/state/audio-player'
 import { Music } from '$/state/audio-player/music'
 import { formHeaders } from '$/utils/http'
-import { use, useCallback, useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
 import Search from './libs/components/icons/Search'
 import Spinner from './libs/components/icons/Spinner'
-import AudioCard from './playlist/AudioCard'
-import { useInView } from 'react-intersection-observer'
+import AudioCard from '$/components/AudioCard'
 
 export default function Home() {
   const db = use(DatabaseContext)
@@ -32,7 +31,6 @@ export default function Home() {
   const [providerId, setProviderId] = useState<string>()
   const [curProvider, setCurProvider] = useState<AudioProvider | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [ref, inView] = useInView({ threshold: 0.5 })
 
   useEffect(() => {
     if (!db) return
@@ -69,11 +67,6 @@ export default function Home() {
       toast.error('Something wrong, please retry later.')
     }
   }
-
-  useEffect(() => {
-    console.log('isInView', inView)
-    if (inView && !isLoading) console.log(inView)
-  }, [inView, isLoading])
 
   const downloadMusic = async (music: Music) => {
     if (!curProvider || !dlDir || !db) {
@@ -183,7 +176,7 @@ export default function Home() {
       </ul>
 
       {searchResult.length > 0 && (
-        <div ref={ref} className="mx-auto flex w-11/12 py-8 pt-2 md:w-1/2">
+        <div className="mx-auto flex w-11/12 py-8 pt-2 md:w-1/2">
           <Button
             variant="primary"
             className="mx-auto w-full"

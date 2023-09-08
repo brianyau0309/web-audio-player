@@ -6,20 +6,15 @@ import { SQLocalKysely } from 'sqlocal/kysely'
 import { AudioProviderTable } from './audio-provider'
 import { initialMigration, migrations } from './migration'
 import { AudioTable } from './audio'
+import { PlaylistAudioTable, PlaylistTable } from './playlist'
 
 export type Tables = {
   audio_provider: AudioProviderTable
   audio: AudioTable
+  playlist: PlaylistTable
+  playlist_audio: PlaylistAudioTable
 }
 export type Database = Kysely<Tables>
-
-export class DatabaseError extends Error {}
-
-export class DatabaseNotInitialized extends DatabaseError {
-  constructor() {
-    super('Database is not initialized')
-  }
-}
 
 export const DatabaseContext = createContext<Database | null>(null)
 

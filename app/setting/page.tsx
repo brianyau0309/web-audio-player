@@ -2,6 +2,7 @@
 
 import { Button } from '$/components/Button'
 import { Input } from '$/components/Input'
+import Add from '$/components/icons/Add'
 import Trash from '$/components/icons/Trash'
 import { DatabaseContext } from '$/database'
 import {
@@ -154,6 +155,7 @@ const AddModal = ({
               ))}
               <Button
                 className="flex items-center justify-center"
+                variant="primary"
                 type="button"
                 onClick={() =>
                   setHeaders((current) => {
@@ -162,27 +164,14 @@ const AddModal = ({
                 }
               >
                 <>
-                  <svg
-                    className="h-3 w-3 text-gray-800 dark:text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 18"
-                  >
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 1v16M1 9h16"
-                    />
-                  </svg>
+                  <Add className="h-3 w-3 text-gray-800 dark:text-white" />
                   &nbsp;&nbsp;&nbsp;Add Header
                 </>
               </Button>
             </div>
           </div>
           <div className="flex items-center space-x-2 rounded-b border-t border-gray-200 p-6 dark:border-gray-600">
-            <Button className="w-full" type="submit">
+            <Button className="w-full" type="submit" variant="primary">
               Add
             </Button>
           </div>

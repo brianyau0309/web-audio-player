@@ -2,14 +2,6 @@
 
 import { createContext, useEffect, useState } from 'react'
 
-export class OPFSError extends Error {}
-
-export class OPFSNotInitializedError extends OPFSError {
-  constructor() {
-    super('OPFSProvider not initialized')
-  }
-}
-
 export type OPFSState = {
   dlDir: FileSystemDirectoryHandle | null
   thumbnailDir: FileSystemDirectoryHandle | null

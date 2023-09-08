@@ -1,26 +1,29 @@
 'use client'
 
-import { DatabaseContext } from '$/database'
-import { AudioInfo, fetchAudio } from '$/database/audio'
+import { AudioInfo } from '$/database/audio'
 import { OPFSContext } from '$/opfs'
 import { shuffle } from '$/utils/array'
-import { createContext, use, useEffect, useReducer, useRef } from 'react'
+import { createContext, use, useReducer, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 
 type PlaylistState = {
+  playlistId: string | null
   playlist: AudioInfo[]
   curIndex: number
   src: string
 }
 
 type PlayListAction =
+  | { type: 'setPlaylistId'; payload: string }
   | { type: 'setPlaylist'; payload: AudioInfo[] }
   | { type: 'addAudio'; payload: AudioInfo[] }
   | { type: 'removeAudio'; payload: number }
+  | { type: 'removeAudioById'; payload: string }
   | { type: 'setAudio'; payload: Pick<PlaylistState, 'curIndex' | 'src'> }
   | { type: 'randomize' }
 
 const initialPlaylistState: PlaylistState = {
+  playlistId: null,
   playlist: [],
   curIndex: -1,
   src: '',
@@ -40,7 +43,10 @@ export const AudioPlayerContext = createContext<AudioPlayerState>({
 })
 
 const reducer = (state: PlaylistState, action: PlayListAction) => {
+  let playlist: AudioInfo[]
   switch (action.type) {
+    case 'setPlaylistId':
+      return { ...state, playlistId: action.payload }
     case 'setPlaylist':
       return { ...state, playlist: action.payload }
     case 'setAudio':
@@ -48,13 +54,24 @@ const reducer = (state: PlaylistState, action: PlayListAction) => {
     case 'addAudio':
       return { ...state, playlist: [...state.playlist, ...action.payload] }
     case 'removeAudio':
-      const newPlaylist = state.playlist.filter((_, i) => i !== action.payload)
+      playlist = state.playlist.filter((_, i) => i !== action.payload)
       if (action.payload !== state.curIndex) {
         const newIndex =
           state.curIndex > action.payload ? state.curIndex - 1 : state.curIndex
-        return { ...state, playlist: newPlaylist, curIndex: newIndex }
+        return { ...state, playlist, curIndex: newIndex }
       } else {
-        return { ...state, playlist: newPlaylist, curIndex: -1, src: '' }
+        return { ...state, playlist, curIndex: -1, src: '' }
+      }
+    case 'removeAudioById':
+      const idx = state.playlist.findIndex(({ id }) => id === action.payload)
+      if (idx === -1) return state
+      playlist = state.playlist.filter(({ id }) => id !== action.payload)
+      if (idx !== state.curIndex) {
+        const newIndex =
+          state.curIndex > idx ? state.curIndex - 1 : state.curIndex
+        return { ...state, playlist, curIndex: newIndex }
+      } else {
+        return { ...state, playlist, curIndex: -1, src: '' }
       }
     case 'randomize':
       const clone = state.playlist.slice()
@@ -72,22 +89,21 @@ export const AudioPlayerProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const db = use(DatabaseContext)
   const { dlDir } = use(OPFSContext)
   const ref = useRef<React.ElementRef<'audio'>>(null)
   const [state, dispatch] = useReducer(reducer, initialPlaylistState)
 
   // Initialize Playlist
-  useEffect(() => {
-    if (!db) return
-    fetchAudio(db, 100)
-      .then((res) => dispatch({ type: 'setPlaylist', payload: res }))
-      .catch((e) => {
-        if (typeof e === 'object' && e != null && 'message' in e)
-          console.warn(e?.message)
-        else console.error(e)
-      })
-  }, [db, dispatch])
+  // useEffect(() => {
+  //   if (!db) return
+  //   fetchAudio(db, 100)
+  //     .then((res) => dispatch({ type: 'setPlaylist', payload: res }))
+  //     .catch((e) => {
+  //       if (typeof e === 'object' && e != null && 'message' in e)
+  //         console.warn(e?.message)
+  //       else console.error(e)
+  //     })
+  // }, [db, dispatch])
 
   const nextAudio = async (index?: number) => {
     if (!dlDir) return false

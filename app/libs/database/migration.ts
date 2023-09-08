@@ -55,4 +55,23 @@ export const migrations: {
 );`
     },
   },
+  {
+    version: 3,
+    description: 'Create table playlist and playlist_audio',
+    query(sql) {
+      return sql`
+CREATE TABLE playlist (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE playlist_audio (
+  playlist_id TEXT NOT NULL,
+  audio_id TEXT NOT NULL,
+  PRIMARY KEY (playlist_id, audio_id),
+  FOREIGN KEY (playlist_id) REFERENCES playlist (id),
+  FOREIGN KEY (audio_id) REFERENCES audio (id)
+);`
+    },
+  },
 ]
