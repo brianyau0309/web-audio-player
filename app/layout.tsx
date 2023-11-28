@@ -38,7 +38,7 @@ export default function RootLayout({
           <div className="flex flex-col overflow-hidden">
             <Navbar />
 
-            <main className="container mx-auto h-[calc(100vh-2.5rem)] overflow-y-auto bg-black md:px-4">
+            <main className="container mx-auto h-[calc(100dvh-2.5rem)] overflow-y-auto bg-black md:px-4">
               {children}
             </main>
 
