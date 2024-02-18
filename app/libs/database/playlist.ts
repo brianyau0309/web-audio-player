@@ -41,22 +41,21 @@ export async function findPlaylist(
     .innerJoin('playlist_audio', 'playlist_audio.playlist_id', 'playlist.id')
     .innerJoin('audio', 'audio.id', 'playlist_audio.audio_id')
     .innerJoin('audio_provider', 'audio_provider.id', 'audio.provider_id')
-    .select(['playlist.id', 'playlist.name'])
+    .where('playlist.id', '=', id)
     .select([
+      'playlist.id',
+      'playlist.name',
       'audio.id as audio_id',
       'audio.title',
       'audio.artist',
       'audio.url',
       'audio.downloaded',
       'audio.thumbnail',
-    ])
-    .select([
       'audio_provider.id as provider_id',
       'audio_provider.name as provider_name',
       'audio_provider.headers',
       'audio_provider.url as provider_url',
     ])
-    .where('playlist.id', '=', id)
     .execute()
 
   if (playlist.length === 0) return null
@@ -82,10 +81,9 @@ export async function findPlaylist(
 }
 
 export async function createPlaylist(db: Database, name: string) {
-  await db
-    .insertInto('playlist')
-    .values({ id: crypto.randomUUID(), name })
-    .execute()
+  const newPlaylist = { id: crypto.randomUUID(), name }
+  await db.insertInto('playlist').values(newPlaylist).execute()
+  return newPlaylist
 }
 
 export async function removePlaylist(db: Database, id: string) {

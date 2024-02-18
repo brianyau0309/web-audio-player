@@ -44,6 +44,32 @@ export default function PlaylistPage() {
     playlistDispatch({ type: 'removeAudio', payload: index })
   }
 
+  const selectPlaylist = (id: string) => {
+    if (!db) return
+    playlistDispatch({ type: 'setPlaylistId', payload: id })
+    findPlaylist(db, id)
+      .then((res) =>
+        playlistDispatch({ type: 'setPlaylist', payload: res?.audios ?? [] }),
+      )
+      .catch((e) => {
+        if (typeof e === 'object' && e != null && 'message' in e) {
+          console.warn(e?.message)
+        } else {
+          console.error(e)
+        }
+      })
+  }
+
+  const handleSubmit = async () => {
+    if (!newPlaylist || !db) return
+    setShow(false)
+    const p = await createPlaylist(db, newPlaylist)
+    toast.success('Playlist is created')
+    const res = await fetchPlaylists(db)
+    setPlaylists(res)
+    selectPlaylist(p.id)
+  }
+
   return (
     <>
       <Modal
@@ -51,14 +77,7 @@ export default function PlaylistPage() {
         submitText="Add"
         show={show}
         close={() => setShow(false)}
-        onSubmit={() => {
-          if (!newPlaylist || !db) return
-          setShow(false)
-          createPlaylist(db, newPlaylist).then(() => {
-            toast.success('Playlist is created')
-            fetchPlaylists(db).then((res) => setPlaylists(res))
-          })
-        }}
+        onSubmit={handleSubmit}
       >
         <div className="flex flex-col">
           <Input
@@ -72,31 +91,13 @@ export default function PlaylistPage() {
       <div className="sticky top-0 flex flex-row bg-black px-2 pt-4 md:px-0">
         <select
           className="col-span-12 block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-gray-400 dark:focus:border-blue-500 md:col-span-3"
-          onChange={(e) => {
-            if (!db) return
-
-            playlistDispatch({
-              type: 'setPlaylistId',
-              payload: e.currentTarget.value,
-            })
-            findPlaylist(db, e.currentTarget.value)
-              .then((res) =>
-                playlistDispatch({
-                  type: 'setPlaylist',
-                  payload: res?.audios ?? [],
-                }),
-              )
-              .catch((e) => {
-                if (typeof e === 'object' && e != null && 'message' in e)
-                  console.warn(e?.message)
-                else console.error(e)
-              })
-          }}
+          onChange={(e) => selectPlaylist(e.target.value)}
+          value={playlistId ?? 0}
           required
         >
           <option value={0}>Select Playlist</option>
           {playlists?.map((p) => (
-            <option selected={p.id === playlistId} key={p.id} value={p.id}>
+            <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}

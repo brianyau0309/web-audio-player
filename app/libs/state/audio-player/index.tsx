@@ -2,15 +2,25 @@
 
 import { AudioInfo } from '$/database/audio'
 import { OPFSContext } from '$/opfs'
+import { Budio } from '$/budio'
 import { shuffle } from '$/utils/array'
-import { createContext, use, useReducer, useRef } from 'react'
+import {
+  createContext,
+  use,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'react-hot-toast'
+import { loadImageFromFile } from '$/components/AudioCard'
 
 type PlaylistState = {
   playlistId: string | null
   playlist: AudioInfo[]
   curIndex: number
   src: string
+  audio: Budio | null
 }
 
 type PlayListAction =
@@ -19,7 +29,10 @@ type PlayListAction =
   | { type: 'addAudio'; payload: AudioInfo[] }
   | { type: 'removeAudio'; payload: number }
   | { type: 'removeAudioById'; payload: string }
-  | { type: 'setAudio'; payload: Pick<PlaylistState, 'curIndex' | 'src'> }
+  | {
+      type: 'setAudio'
+      payload: Pick<PlaylistState, 'curIndex' | 'src' | 'audio'>
+    }
   | { type: 'randomize' }
 
 const initialPlaylistState: PlaylistState = {
@@ -27,6 +40,7 @@ const initialPlaylistState: PlaylistState = {
   playlist: [],
   curIndex: -1,
   src: '',
+  audio: null,
 }
 
 export type AudioPlayerState = {
@@ -50,6 +64,7 @@ const reducer = (state: PlaylistState, action: PlayListAction) => {
     case 'setPlaylist':
       return { ...state, playlist: action.payload }
     case 'setAudio':
+      state.audio = null
       return { ...state, ...action.payload }
     case 'addAudio':
       return { ...state, playlist: [...state.playlist, ...action.payload] }
@@ -89,12 +104,17 @@ export const AudioPlayerProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const { dlDir } = use(OPFSContext)
+  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null)
+  const { dlDir, thumbnailDir } = use(OPFSContext)
   const ref = useRef<React.ElementRef<'audio'>>(null)
   const [state, dispatch] = useReducer(reducer, initialPlaylistState)
 
+  useEffect(() => {
+    setAudioCtx(new AudioContext())
+  }, [setAudioCtx])
+
   const nextAudio = async (index?: number) => {
-    if (!dlDir) return false
+    if (!dlDir || !audioCtx) return false
 
     const nextIndex = index ?? state.curIndex + 1
     const nextAudio = state.playlist[nextIndex]
@@ -105,7 +125,38 @@ export const AudioPlayerProvider = ({
     try {
       const file = await dlDir.getFileHandle(`${nextAudio.id}`)
       const url = URL.createObjectURL(await file.getFile())
-      dispatch({ type: 'setAudio', payload: { curIndex: nextIndex, src: url } })
+      let imgUrl
+      if (nextAudio.downloaded && dlDir && thumbnailDir) {
+        imgUrl = await loadImageFromFile(dlDir, nextAudio.id, thumbnailDir)
+          .then((url) => url)
+          .catch(() => null)
+      }
+
+      const artwork = imgUrl
+        ? [
+            {
+              src: imgUrl,
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ]
+        : []
+
+      const a = new Budio(
+        audioCtx,
+        async () => (await file.getFile()).arrayBuffer(),
+        {
+          mediaMetadata: new MediaMetadata({
+            title: nextAudio.title,
+            artist: nextAudio.artist,
+            artwork,
+          }),
+        },
+      )
+      dispatch({
+        type: 'setAudio',
+        payload: { curIndex: nextIndex, src: url, audio: a },
+      })
       return true
     } catch (e) {
       toast.error(`Failed to get file handle for ${nextAudio.id}.`)

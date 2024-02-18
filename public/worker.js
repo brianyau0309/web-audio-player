@@ -2,12 +2,10 @@ const cacheName = 'v1'
 
 const cacheClone = async (e) => {
   const res = await fetch(e.request)
-  if (e.request.mode !== 'cors') {
-    const resClone = res.clone()
+  const resClone = res.clone()
 
-    const cache = await caches.open(cacheName)
-    await cache.put(e.request, resClone)
-  }
+  const cache = await caches.open(cacheName)
+  await cache.put(e.request, resClone)
   return res
 }
 

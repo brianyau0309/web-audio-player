@@ -11,7 +11,7 @@ import { parseBlob } from 'music-metadata-browser'
 
 const defaultThumbnail = '/no-image-audio.png'
 
-async function loadImageFromFile(
+export async function loadImageFromFile(
   audioDir: FileSystemDirectoryHandle,
   fileName: string,
   thumailDir?: FileSystemDirectoryHandle,
