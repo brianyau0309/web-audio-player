@@ -1,13 +1,12 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { AudioPlayerContext } from '../state/audio-player'
 import { Button } from './Button'
 
 export const AudioPlayer = () => {
   const {
-    ref,
-    playlistState: { src, audio },
+    playlistState: { audio },
     nextAudio,
   } = use(AudioPlayerContext)
   const [audioInfo, setAudioInfo] = useState<{
@@ -15,9 +14,11 @@ export const AudioPlayer = () => {
     duration: number
     buffered: number
   }>({ currentTime: 0, duration: 0, buffered: 0 })
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     if (!audio) return
+    audioRef.current?.play()
     audio.play()
     const ac = new AbortController()
     audio.target.addEventListener(
@@ -44,10 +45,22 @@ export const AudioPlayer = () => {
     <div className="fixed bottom-0 left-0 z-40 flex w-full">
       {audio && (
         <div>
-          <Button variant="primary" onClick={() => audio.play()}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              audioRef.current?.play()
+              audio.play()
+            }}
+          >
             Play
           </Button>
-          <Button variant="primary" onClick={() => audio.pause()}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              audioRef.current?.pause()
+              audio.pause()
+            }}
+          >
             Pause
           </Button>
           <Button variant="primary" onClick={() => audio.seek(160)}>
@@ -59,14 +72,7 @@ export const AudioPlayer = () => {
           </div>
         </div>
       )}
-      {/*<audio
-        className="h-full min-h-[2rem] w-full"
-        ref={ref}
-        controls
-        src={src}
-        onEnded={() => nextAudio()}
-        autoPlay
-      />*/}
+      <audio ref={audioRef} src="/silence.mp3" controls loop />
     </div>
   )
 }

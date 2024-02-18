@@ -68,8 +68,8 @@ export class Budio {
       this.#duration = opts.duration
     }
 
-    if (opts.mediaMetadata && "mediaSession" in navigator) {
-        navigator.mediaSession.metadata = opts.mediaMetadata
+    if (opts.mediaMetadata && 'mediaSession' in navigator) {
+      navigator.mediaSession.metadata = opts.mediaMetadata
     }
   }
 
@@ -280,7 +280,14 @@ export class Budio {
     this.#playState = 'Playing'
     this.#setTickTimer()
     if (this.#bufferable) this.#setBufferingTimer()
-    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing"
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing'
+      navigator.mediaSession.setPositionState({
+        duration: this.duration,
+        playbackRate: 1,
+        position: this.currentTime,
+      })
+    }
   }
 
   /** @readonly */
@@ -291,7 +298,8 @@ export class Budio {
     this.#cleanCurrentNode()
     this.#pauseAt = this.currentTime
     this.#playState = 'Paused'
-    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused"
+    if ('mediaSession' in navigator)
+      navigator.mediaSession.playbackState = 'paused'
   }
 
   /** @readonly */
