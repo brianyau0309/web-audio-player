@@ -65,6 +65,15 @@ export const AudioPlayer = () => {
             else audio.seek((curr) => curr - 3)
           },
         },
+        {
+          action: 'seekto',
+          handler: (evt) => {
+            console.debug('seekto', evt.seekTime)
+            const time = evt.seekTime
+            // FIXME: seekTime is not working on desktop, not sure about mobile
+            if (time) audio.seek(() => time)
+          },
+        },
       ]
       for (const { action, handler } of actions) {
         navigator.mediaSession.setActionHandler(action, handler)
@@ -128,7 +137,7 @@ export const AudioPlayer = () => {
           </div>
         </div>
       )}
-      <audio ref={audioRef} src="/silence.mp3" controls loop />
+      <audio ref={audioRef} src="/silence.mp3" loop />
     </div>
   )
 }
