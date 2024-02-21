@@ -120,7 +120,7 @@ export default function PlaylistPage() {
               'bg-slate-900': index === curIndex,
             })}
             audio={audio}
-            onClick={() => nextAudio(index)}
+            onClick={() => nextAudio(() => index)}
             onDelete={() => handleDelete(index)}
           />
         ))}

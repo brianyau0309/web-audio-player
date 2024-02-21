@@ -47,7 +47,7 @@ export type AudioPlayerState = {
   ref?: React.RefObject<HTMLAudioElement>
   playlistState: PlaylistState
   playlistDispatch: React.Dispatch<PlayListAction>
-  nextAudio: (index?: number) => Promise<boolean>
+  nextAudio: (index?: (i: number) => number) => Promise<boolean>
 }
 
 export const AudioPlayerContext = createContext<AudioPlayerState>({
@@ -113,10 +113,10 @@ export const AudioPlayerProvider = ({
     setAudioCtx(new AudioContext())
   }, [setAudioCtx])
 
-  const nextAudio = async (index?: number) => {
+  const nextAudio = async (fn?: (curIndex: number) => number) => {
     if (!dlDir || !audioCtx) return false
 
-    const nextIndex = index ?? state.curIndex + 1
+    const nextIndex = fn ? Math.max(fn(state.curIndex)) : state.curIndex + 1
     const nextAudio = state.playlist[nextIndex]
     // If there is no next audio, return false
     if (!nextAudio) return false

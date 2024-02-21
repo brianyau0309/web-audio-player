@@ -237,6 +237,17 @@ export class Budio {
     this.target.dispatchEvent(new Event('ended'))
   }
 
+  /** @readonly */
+  #setMediaPositionState() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setPositionState({
+        duration: this.duration,
+        playbackRate: 1,
+        position: this.currentTime,
+      })
+    }
+  }
+
   /* Public Methods */
 
   async init() {
@@ -282,11 +293,7 @@ export class Budio {
     if (this.#bufferable) this.#setBufferingTimer()
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
-      navigator.mediaSession.setPositionState({
-        duration: this.duration,
-        playbackRate: 1,
-        position: this.currentTime,
-      })
+      this.#setMediaPositionState()
     }
   }
 
@@ -311,8 +318,9 @@ export class Budio {
     this.#playState = 'Stopped'
   }
 
-  /** @readonly @param {number} time  */
-  async seek(time) {
+  /** @readonly @param {(currentTime: number) => number} timeHandler  */
+  async seek(timeHandler) {
+    const time = timeHandler(this.currentTime)
     console.debug('seek to', time)
     if (!['Playing', 'Paused', 'PlayAfterBuffering'].includes(this.#playState))
       throw new BudioError(
@@ -320,7 +328,9 @@ export class Budio {
       )
     if (!this.#audioBuffer) await this.init()
     if (!this.#audioBuffer) throw new BudioError('AudioBuffer is not ready')
-    if (this.#audioBuffer.duration < time) throw new BudioError('Invalid time')
+    if (time < 0) throw new BudioError(`Invalid time ${time} < 0`)
+    if (this.#audioBuffer.duration < time)
+      throw new BudioError(`Invalid time ${time} > druation`)
 
     if (this.#playState === 'Playing') {
       this.#cleanCurrentNode()
@@ -329,6 +339,7 @@ export class Budio {
       this.#startAt = this.#audioCtx.currentTime - time
       this.#setTickTimer()
       if (this.#bufferable) this.#setBufferingTimer()
+      this.#setMediaPositionState()
     } else {
       this.#pauseAt = time
     }
