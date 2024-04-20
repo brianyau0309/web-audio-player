@@ -294,7 +294,7 @@ export class Budio {
     if (this.#bufferable) this.#setBufferingTimer()
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing'
-      this.#setMediaPositionState()
+      this.setMediaPositionState()
     }
   }
 
@@ -340,7 +340,7 @@ export class Budio {
       this.#startAt = this.#audioCtx.currentTime - time
       this.#setTickTimer()
       if (this.#bufferable) this.#setBufferingTimer()
-      this.#setMediaPositionState()
+      this.setMediaPositionState()
     } else {
       this.#pauseAt = time
     }
