@@ -51,7 +51,8 @@ export const AudioPlayer = () => {
             console.debug('forward offset', evt.seekOffset)
             const offset = evt.seekOffset
             // FIXME: Offset is not working, evt.seekOffset is always undefined
-            if (offset) audio.seek((curr) => curr + offset)
+            if (offset != null)
+              audio.seek((curr, d) => Math.min(d, curr + offset))
             else audio.seek((curr, d) => Math.min(d, curr + 3))
           },
         },
@@ -61,7 +62,7 @@ export const AudioPlayer = () => {
             console.debug('backward', evt.seekOffset)
             const offset = evt.seekOffset
             // FIXME: Offset is not working, evt.seekOffset is always undefined
-            if (offset) audio.seek((curr) => curr - offset)
+            if (offset != null) audio.seek((curr) => Math.max(0, curr - offset))
             else audio.seek((curr) => Math.max(0, curr - 3))
           },
         },
@@ -71,7 +72,7 @@ export const AudioPlayer = () => {
             // seekTime only work on mobile but not work on desktop
             console.debug('seekto event', evt)
             const time = evt.seekTime
-            if (time) audio.seek(() => Math.max(0, Math.floor(time)))
+            if (time != null) audio.seek(() => Math.max(0, Math.floor(time)))
           },
         },
       ]
@@ -93,9 +94,17 @@ export const AudioPlayer = () => {
       },
       { signal: ac.signal },
     )
-    audio.target.addEventListener('ended', () => nextAudio(), {
-      signal: ac.signal,
-    })
+    audio.target.addEventListener(
+      'ended',
+      () => {
+        nextAudio().then((haveNext) => {
+          if (!haveNext) audioRef.current?.pause()
+        })
+      },
+      {
+        signal: ac.signal,
+      },
+    )
     return () => {
       ac.abort()
       audio.stop()

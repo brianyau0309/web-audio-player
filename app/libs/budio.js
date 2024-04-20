@@ -236,6 +236,8 @@ export class Budio {
     this.#cleanCurrentNode()
     this.#playState = 'Ended'
     this.target.dispatchEvent(new Event('ended'))
+    if ('mediaSession' in navigator)
+      navigator.mediaSession.playbackState = 'paused'
   }
 
   /** @readonly */
