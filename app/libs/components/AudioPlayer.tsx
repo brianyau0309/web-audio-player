@@ -88,7 +88,19 @@ export const AudioPlayer = () => {
           duration: audio.duration,
           buffered: audio.buffered,
         })
-        audio.setMediaPositionState()
+        // audio.setMediaPositionState()
+        if ('mediaSession' in navigator) {
+          console.info(
+            'inline info',
+            Math.ceil(audio.currentTime),
+            Math.floor(audio.duration),
+          )
+          navigator.mediaSession.setPositionState({
+            duration: Math.floor(audio.duration),
+            playbackRate: 1,
+            position: Math.ceil(audio.currentTime),
+          })
+        }
       },
       { signal: ac.signal },
     )
