@@ -140,7 +140,7 @@ export const AudioPlayer = () => {
           </div>
         </div>
       )}
-      <audio ref={audioRef} src="/silence.mp3" preload="auto" loop />
+      <audio ref={audioRef} src="/silence.mp3" loop />
     </div>
   )
 }
