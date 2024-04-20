@@ -69,6 +69,7 @@ export const AudioPlayer = () => {
           action: 'seekto',
           handler: (evt) => {
             // seekTime only work on mobile but not work on desktop
+            console.debug('seekto event', evt)
             const time = evt.seekTime
             if (time) audio.seek(() => Math.max(0, Math.floor(time)))
           },
@@ -88,19 +89,7 @@ export const AudioPlayer = () => {
           duration: audio.duration,
           buffered: audio.buffered,
         })
-        // audio.setMediaPositionState()
-        if ('mediaSession' in navigator) {
-          console.info(
-            'inline info',
-            Math.ceil(audio.currentTime),
-            Math.floor(audio.duration),
-          )
-          navigator.mediaSession.setPositionState({
-            duration: Math.floor(audio.duration),
-            playbackRate: 1,
-            position: Math.ceil(audio.currentTime),
-          })
-        }
+        audio.setMediaPositionState()
       },
       { signal: ac.signal },
     )
