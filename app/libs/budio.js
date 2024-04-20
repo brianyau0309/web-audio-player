@@ -240,12 +240,12 @@ export class Budio {
 
   /** @readonly */
   setMediaPositionState() {
+    console.info(
+      'setMediaPositionState',
+      Math.ceil(this.currentTime),
+      Math.floor(this.duration),
+    )
     if ('mediaSession' in navigator) {
-      console.debug(
-        'setMediaPositionState',
-        Math.ceil(this.currentTime),
-        Math.floor(this.duration),
-      )
       navigator.mediaSession.setPositionState({
         duration: Math.floor(this.duration),
         playbackRate: 1,
