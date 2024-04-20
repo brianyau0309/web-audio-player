@@ -68,9 +68,8 @@ export const AudioPlayer = () => {
         {
           action: 'seekto',
           handler: (evt) => {
-            console.debug('seekto', evt.seekTime)
+            // seekTime only work on mobile but not work on desktop
             const time = evt.seekTime
-            // FIXME: seekTime is not working on desktop, not sure about mobile
             if (time) audio.seek(() => time)
           },
         },
@@ -89,6 +88,7 @@ export const AudioPlayer = () => {
           duration: audio.duration,
           buffered: audio.buffered,
         })
+        audio.setMediaPositionState()
       },
       { signal: ac.signal },
     )

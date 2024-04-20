@@ -205,10 +205,11 @@ export class Budio {
     node.addEventListener(
       'ended',
       () => {
-        const currentTime = this.currentTime
-        if (currentTime >= this.duration) this.#end()
+        const currentTime = Math.ceil(this.currentTime)
+        const duration = Math.floor(this.duration)
+        if (currentTime >= duration) this.#end()
         else {
-          console.log(currentTime, this.duration)
+          console.log(currentTime, duration)
           this.pause()
           this.#playState = 'PlayAfterBuffering'
         }
@@ -238,7 +239,7 @@ export class Budio {
   }
 
   /** @readonly */
-  #setMediaPositionState() {
+  setMediaPositionState() {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setPositionState({
         duration: this.duration,
