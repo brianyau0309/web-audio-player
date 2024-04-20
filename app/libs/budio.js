@@ -4,7 +4,7 @@
  * @typedef {(range?: Range) => Promise<ArrayBuffer>} AudioFetcher
  * */
 
-export class BudioError extends Error {}
+export class BudioError extends Error { }
 
 export class Budio {
   /** @type {AudioFetcher} */
@@ -242,9 +242,9 @@ export class Budio {
   setMediaPositionState() {
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setPositionState({
-        duration: this.duration,
+        duration: Math.floor(this.duration),
         playbackRate: 1,
-        position: this.currentTime,
+        position: Math.ceil(this.currentTime),
       })
     }
   }
@@ -319,9 +319,9 @@ export class Budio {
     this.#playState = 'Stopped'
   }
 
-  /** @readonly @param {(currentTime: number) => number} timeHandler  */
+  /** @readonly @param {(currentTime: number, duration: number) => number} timeHandler  */
   async seek(timeHandler) {
-    const time = timeHandler(this.currentTime)
+    const time = timeHandler(this.currentTime, this.duration)
     console.debug('seek to', time)
     if (!['Playing', 'Paused', 'PlayAfterBuffering'].includes(this.#playState))
       throw new BudioError(

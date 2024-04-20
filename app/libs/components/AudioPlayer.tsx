@@ -52,7 +52,7 @@ export const AudioPlayer = () => {
             const offset = evt.seekOffset
             // FIXME: Offset is not working, evt.seekOffset is always undefined
             if (offset) audio.seek((curr) => curr + offset)
-            else audio.seek((curr) => curr + 3)
+            else audio.seek((curr, d) => Math.min(d, curr + 3))
           },
         },
         {
@@ -62,7 +62,7 @@ export const AudioPlayer = () => {
             const offset = evt.seekOffset
             // FIXME: Offset is not working, evt.seekOffset is always undefined
             if (offset) audio.seek((curr) => curr - offset)
-            else audio.seek((curr) => curr - 3)
+            else audio.seek((curr) => Math.max(0, curr - 3))
           },
         },
         {
@@ -70,7 +70,7 @@ export const AudioPlayer = () => {
           handler: (evt) => {
             // seekTime only work on mobile but not work on desktop
             const time = evt.seekTime
-            if (time) audio.seek(() => time)
+            if (time) audio.seek(() => Math.max(0, Math.floor(time)))
           },
         },
       ]
@@ -131,13 +131,16 @@ export const AudioPlayer = () => {
           >
             Fastforward 10
           </Button>
+          <Button variant="primary" onClick={() => audio.seek(() => 0)}>
+            Back to 0
+          </Button>
           <div>
             {audioInfo.currentTime.toFixed(2)} / {audioInfo.duration.toFixed(2)}{' '}
             ({audioInfo.buffered.toFixed(2)})
           </div>
         </div>
       )}
-      <audio ref={audioRef} src="/silence.mp3" loop />
+      <audio ref={audioRef} src="/silence.mp3" preload="auto" loop />
     </div>
   )
 }
