@@ -251,7 +251,10 @@ export class Budio {
       navigator.mediaSession.setPositionState({
         duration: Math.floor(this.duration),
         playbackRate: 1,
-        position: Math.ceil(this.currentTime),
+        position: Math.max(
+          Math.floor(this.duration),
+          Math.ceil(this.currentTime),
+        ),
       })
     }
   }
