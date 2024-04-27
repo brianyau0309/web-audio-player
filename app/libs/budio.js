@@ -242,19 +242,17 @@ export class Budio {
 
   /** @readonly */
   setMediaPositionState() {
-    console.info(
-      'setMediaPositionState',
-      Math.ceil(this.currentTime),
-      Math.floor(this.duration),
-    )
     if ('mediaSession' in navigator) {
+      const position = Math.min(
+        Math.floor(this.duration),
+        Math.ceil(this.currentTime),
+      )
+      const duration = Math.floor(this.duration)
+      console.info('setMediaPositionState', position, duration)
       navigator.mediaSession.setPositionState({
-        duration: Math.floor(this.duration),
+        duration,
         playbackRate: 1,
-        position: Math.max(
-          Math.floor(this.duration),
-          Math.ceil(this.currentTime),
-        ),
+        position,
       })
     }
   }

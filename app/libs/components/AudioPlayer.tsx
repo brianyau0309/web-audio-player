@@ -49,6 +49,7 @@ export const AudioPlayer = () => {
       const val = e.target.value
       audio.seek(() => parseInt(val))
       updateAudioInfo()
+      setIsSliding(false)
     }
   }
 
