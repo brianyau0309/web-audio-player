@@ -58,11 +58,9 @@ export const AudioPlayer = () => {
       if (audio.playState === 'Playing') {
         audioRef.current?.pause()
         audio.pause()
-        console.log(audio.playState)
       } else {
         audioRef.current?.play()
         audio.play()
-        console.log(audio.playState)
       }
       updateAudioInfo()
     }
@@ -158,9 +156,9 @@ export const AudioPlayer = () => {
   }, [audio])
 
   return (
-    <div className="fixed bottom-0 left-0 z-40 w-full rounded-t bg-white p-1 shadow-white dark:bg-gray-700">
+    <div className="z-40 w-full rounded-t bg-white shadow-white dark:bg-gray-700">
       {audio && (
-        <div className="flex w-full flex-row items-center justify-start">
+        <div className="flex w-full flex-row items-center justify-start p-1">
           <div>
             <Button
               variant="primary"

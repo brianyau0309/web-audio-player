@@ -13,7 +13,7 @@ export const NavButton = ({ label, svg, href }: NavButtonProps) => {
   const router = useRouter()
   const active = usePathname() === href
   const handleClick = () => {
-    router.push(href)
+    router.push(href, { scroll: false })
   }
 
   return (

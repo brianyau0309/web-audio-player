@@ -9,7 +9,10 @@ const navIconProps = {
 
 export const Navbar = () => {
   return (
-    <div className="sticky left-0 top-0 z-50 h-10 w-full bg-white dark:bg-gray-700">
+    <div
+      className="sticky left-0 top-0 z-50 h-10 min-h-fit w-full bg-white dark:bg-gray-700"
+      style={{ minHeight: '2.5rem' }}
+    >
       <div className="mx-auto grid h-full max-w-lg grid-cols-4 font-medium">
         <NavButton
           // label="Home"

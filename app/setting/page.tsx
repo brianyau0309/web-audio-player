@@ -247,7 +247,7 @@ export default function SettingPage() {
           {audioProviders.map((ap) => (
             <div
               key={ap.id}
-              className="mb-2 flex items-center justify-between rounded-lg border p-4"
+              className="mb-2 mx-2 flex items-center justify-between rounded-lg border p-4"
             >
               {ap.name}
               <Button

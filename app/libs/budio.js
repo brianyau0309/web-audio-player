@@ -209,7 +209,7 @@ export class Budio {
         const duration = Math.floor(this.duration)
         if (currentTime >= duration) this.#end()
         else {
-          console.log(currentTime, duration)
+          console.debug(currentTime, duration)
           this.pause()
           this.#playState = 'PlayAfterBuffering'
         }
@@ -248,7 +248,8 @@ export class Budio {
         Math.ceil(this.currentTime),
       )
       const duration = Math.floor(this.duration)
-      console.info('setMediaPositionState', position, duration)
+      if (position % 5 === 0)
+        console.info('setMediaPositionState', position, duration)
       navigator.mediaSession.setPositionState({
         duration,
         playbackRate: 1,

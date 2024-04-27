@@ -66,12 +66,13 @@ export type AudioCardInfo = Omit<AudioInfo, 'provider'> &
 
 export type AudioCardProps = {
   className?: string
+  imageClassName?: string
   audio: AudioCardInfo
   onClick?: () => void
   onDelete?: () => void
 }
 
-const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
+const AudioCard = ({ className, audio, onClick, onDelete, imageClassName }: AudioCardProps) => {
   const { dlDir, thumbnailDir } = use(OPFSContext)
   const [url, setUrl] = useState<string>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -124,7 +125,7 @@ const AudioCard = ({ className, audio, onClick, onDelete }: AudioCardProps) => {
             <ImageSkeleton className="h-20 w-20 md:h-24 md:w-24" />
           ) : (
             <Image
-              className="h-20 w-20 rounded-xl bg-white md:h-24 md:w-24"
+              className={cx("h-20 w-20 rounded-xl bg-white md:h-24 md:w-24", imageClassName)}
               src={url}
               width={80}
               height={80}

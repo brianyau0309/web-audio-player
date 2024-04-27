@@ -35,10 +35,10 @@ export default function RootLayout({
         />
         <ServiceWorker />
         <AppStateProvider>
-          <div className="flex flex-col overflow-hidden">
+          <div className="flex flex-col" style={{ height: '100dvh' }}>
             <Navbar />
 
-            <main className="container mx-auto h-[calc(100dvh-2.5rem)] overflow-y-auto bg-black md:px-4">
+            <main className="container mx-auto flex-grow overflow-y-auto bg-black md:px-4">
               {children}
             </main>
 

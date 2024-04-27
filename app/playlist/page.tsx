@@ -88,7 +88,7 @@ export default function PlaylistPage() {
         </div>
       </Modal>
 
-      <div className="sticky top-0 flex flex-row bg-black px-2 pt-4 md:px-0">
+      <div className="sticky top-0 flex flex-row bg-black px-2 pt-4 md:px-0 z-10">
         <select
           className="col-span-12 block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-0 dark:border-gray-600 dark:text-gray-400 dark:focus:border-blue-500 md:col-span-3"
           onChange={(e) => selectPlaylist(e.target.value)}
@@ -116,8 +116,13 @@ export default function PlaylistPage() {
         {playlist.map((audio, index) => (
           <AudioCard
             key={audio.id}
-            className={cx('border-gray-200 dark:border-gray-700 md:border-t', {
-              'bg-slate-900': index === curIndex,
+            className={cx(
+              'border-gray-200 dark:border-gray-700 md:mx-auto md:w-8/12 md:border-t',
+              { 'bg-slate-800': index === curIndex },
+            )}
+            imageClassName={cx({
+              'rounded-full': index === curIndex,
+              'animate-spin-slow': index === curIndex,
             })}
             audio={audio}
             onClick={() => nextAudio(() => index)}
