@@ -249,12 +249,9 @@ export class Budio {
       )
       const duration = Math.floor(this.duration)
       if (position % 5 === 0)
-        console.info('setMediaPositionState', position, duration)
-      navigator.mediaSession.setPositionState({
-        duration,
-        playbackRate: 1,
-        position,
-      })
+          console.info('setMediaPositionState', position, duration)
+      if (duration !== 0)
+        navigator.mediaSession.setPositionState({ duration, position })
     }
   }
 
